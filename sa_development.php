@@ -1,0 +1,589 @@
+<?php
+
+/*
+* @Plugin Name: sa_development
+* @Description: Provides alterative debug console
+* @Version: 0.3
+* @Author: Shawn Alverson
+* @Author URI: http://tablatronix.com/getsimple-cms/sa-dev-plugin/
+*/
+
+define('SA_DEBUG',false);
+
+$PLUGIN_ID = "sa_development";
+$PLUGINPATH = $SITEURL.'plugins/sa_development/';
+$sa_url = "http://tablatronix.com/getsimple-cms/sa-dev-plugin/";
+
+# get correct id for plugin
+$thisfile=basename(__FILE__, ".php");
+
+# register plugin
+register_plugin(
+	$thisfile,                  //Plugin id
+	'SA Development', 	        //Plugin name
+	'0.3', 		                  //Plugin version
+	'Shawn Alverson',           //Plugin author
+	$sa_url,                    //author website
+	'SA Development Suite',     //Plugin description
+	'',                         //page type - on which admin tab to display
+	''                          //main function (administration)
+);
+
+// INCLUDES
+require_once('sa_development/hooks.php');
+require_once('sa_development/sa_dev_functions.php');
+  
+// init timer
+$stopwatch = new StopWatch(); 
+
+if(SA_DEBUG==true){
+  error_reporting(E_ALL);
+  ini_set("display_errors", 1);
+}
+
+// enable only when logged in
+if(sa_user_is_admin()){
+  add_action('index-posttemplate', 'sa_debugConsole');
+  if(SA_DEBUG==true) add_action('footer', 'sa_debugtest'); // debug logging
+  add_action('footer', 'sa_debugConsole');
+  if(SA_DEBUG==true) add_action('sa_dev_menu','sa_dev_menu_hook'); // debug dev menus hooks
+}
+
+// asset queing
+// use header hook if older than 3.1
+  if(floatval(GSVERSION) < 3.1){
+    add_action('header', 'sa_dev_executeheader');
+    $owner = "SA_dev_";
+  }  
+  else{ sa_dev_executeheader(); }
+
+
+// GLOBALS
+$SA_DEV_GLOBALS = array();
+$SA_DEV_GLOBALS['show_hooks_front']  = sa_getFlag('sa_shf');  // print hooks frontend
+$SA_DEV_GLOBALS['show_hooks_back']   = sa_getFlag('sa_shb');  // print hooks backend
+$SA_DEV_GLOBALS['bmark_hooks_front'] = sa_getFlag('sa_bhf');  // benchmark hooks frontend
+$SA_DEV_GLOBALS['bmark_hooks_back']  = sa_getFlag('sa_bhb');  // benchmark hooks backend
+$SA_DEV_GLOBALS['live_hooks']  = sa_getFlag('sa_lh');  // live hooks dump
+$SA_DEV_GLOBALS['php_dump']  = sa_getFlag('sa_php');  // php dump
+
+$SA_DEV_BUTTONS = array();
+
+$sa_console_sent = false;
+
+// INIT
+sa_initHookDebug();
+
+// FUNCTIONS
+
+// ARG LOGIC
+function sa_showingHooks(){
+  // are we showing hooks
+  GLOBAL $SA_DEV_GLOBALS;
+  return $SA_DEV_GLOBALS['show_hooks_front'] || $SA_DEV_GLOBALS['show_hooks_back'];
+}
+
+function sa_bmarkingHooks(){
+  // are we bmarking hooks
+  GLOBAL $SA_DEV_GLOBALS;  
+  return $SA_DEV_GLOBALS['bmark_hooks_front'] || $SA_DEV_GLOBALS['bmark_hooks_back'];
+}
+
+function sa_liveHooks(){
+  // are we bmarking hooks
+  GLOBAL $SA_DEV_GLOBALS;  
+  return $SA_DEV_GLOBALS['live_hooks'];
+}
+
+function sa_phpDump(){
+  // are we dumping php
+  GLOBAL $SA_DEV_GLOBALS;  
+  return $SA_DEV_GLOBALS['php_dump'];
+}
+
+function sa_initHookDebug(){
+  // add hooks for showing and bmarking them
+  GLOBAL $SA_DEV_GLOBALS, $FRONT_END_HOOKS, $BACK_END_HOOKS; 
+
+  if(sa_bmarkingHooks()){
+    # debugTitle('Debugging Hooks');
+  }
+  
+  if(sa_showingHooks() || sa_bmarkingHooks()){
+    foreach($FRONT_END_HOOKS as $key=>$value){
+      if($SA_DEV_GLOBALS['bmark_hooks_front']) add_action($key, 'sa_bmark_hook_debug',array($key));
+      if($SA_DEV_GLOBALS['show_hooks_front'])  add_action($key, 'sa_echo_hook',array($key));
+    }
+
+    foreach($BACK_END_HOOKS as $key=>$value){
+      if($SA_DEV_GLOBALS['bmark_hooks_back']) add_action($key, 'sa_bmark_hook_debug',array($key));
+      if($SA_DEV_GLOBALS['show_hooks_back'])  add_action($key, 'sa_echo_hook',array($key));  
+    }
+  }
+}
+
+function sa_debugMenu(){ // outputs the dev menu
+  GLOBAL $SA_DEV_GLOBALS, $SA_DEV_BUTTONS;
+    
+ 	$site = pageIsFrontend() ? 'front' : 'back';
+  $sitecode = pageIsFrontend() ? 'f' : 'b';
+  $sh = '?'.get_toggleqstring('show_hooks_'.$site,'sa_sh'.$sitecode).'#sa_debug_title';
+  $bh = '?'.get_toggleqstring('bmark_hooks_'.$site,'sa_bh'.$sitecode).'#sa_debug_title';
+  $lh = '?'.get_toggleqstring('live_hooks','sa_lh').'#sa_debug_title';
+  $pd = '?'.get_toggleqstring('php_dump','sa_php').'#sa_debug_title';
+  
+  $reset = sa_dev_qstring('sa_sh'.$sitecode);
+  $reset = '?'.sa_dev_qstring('sa_bh'.$sitecode,null,$reset);
+    
+  # debugLog($reset);
+  # debugLog($sh);
+  # debugLog($bh);
+   
+  $local_menu = array();
+  $local_menu[] = array('title'=>'Reset','url'=> $reset);
+  $local_menu[] = array('title'=>'Show Hooks','url'=> $sh,'on'=>$SA_DEV_GLOBALS['show_hooks_'.$site],'about'=>'Show hooks on page');
+  $local_menu[] = array('title'=>'Time Hooks','url'=> $bh,'on'=>$SA_DEV_GLOBALS['bmark_hooks_'.$site],'about'=>'Log hook becnhmark times');
+  $local_menu[] = array('title'=>'Live Hooks','url'=> $lh,'on'=>$SA_DEV_GLOBALS['live_hooks'],'about'=>'Log registered hooks');
+  $local_menu[] = array('title'=>'Dump PHP','url'=> $pd,'on'=>$SA_DEV_GLOBALS['php_dump'],'about'=>'Dump PHP enviroment');
+
+  echo '<div id="sa_dev_menu"><ul>';
+  echo sa_dev_makebuttons($local_menu);
+  exec_action('sa_dev_menu');  
+  if(count($SA_DEV_BUTTONS) > 0){
+    echo '<li><b>|</b> </li>';
+    echo sa_dev_makebuttons($SA_DEV_BUTTONS,true,10);
+  }  
+  echo '</ul></div>';
+  
+}
+
+function sa_dev_makebuttons($buttons,$custom=false,$startid = 0){ // creates individual dev buttons
+  $buttonstr = '';
+  $classon = '_on';
+  $classcustom = '_custom';
+  $id = $startid;
+  
+  foreach($buttons as $button){
+    $class = 'class="sa_dev';
+    $about = $button['title'];
+    if($custom) $class.= $classcustom;
+    if(isset($button['on'])) $class.= $button['on'] ? $classon : ''; 
+    if(isset($button['about'])) $about= $button['about'] ; 
+    $buttonstr.='<li><a id="dev_but_'.$id.'" '.$class.'" href="'.$button['url'].'" title="'.$about.'">'.$button['title'].'</a></li>';
+    $id++;
+  }
+  
+  return $buttonstr;
+}
+
+function sa_dev_menu_hook(){ // debug for dev menu hook
+  GLOBAL $SA_DEV_BUTTONS;
+  $SA_DEV_BUTTONS[] = array('title'=>'Hooked Button off','url'=>'#','on'=>true);
+  $SA_DEV_BUTTONS[] = array('title'=>'Hooked Button on','url'=>'#','on'=>false);
+}
+
+
+function sa_dev_executeheader(){ // assigns assets to queue or header
+  GLOBAL $PLUGIN_ID, $PLUGINPATH, $owner;
+
+  # debugLog("sa_dev_executeheader");
+  
+  $regscript = $owner."register_script";
+  $regstyle  = $owner."register_style";
+  $quescript = $owner."queue_script";
+  $questyle  = $owner."queue_style";
+
+  $regstyle($PLUGIN_ID, $PLUGINPATH.'css/sa_dev_style.css', '0.1', 'screen');
+  $questyle($PLUGIN_ID,GSBOTH);   
+}
+
+function sa_debugConsole(){  // Display the log
+  global $GS_debug,$stopwatch,$sa_console_sent;            
+
+  if(sa_liveHooks()){
+    # debugTitle('Debugging Hooks');
+    sa_dumpLiveHooks();
+  }
+
+  if(sa_phpDump()){
+    # debugTitle('PHP Dump');
+    sa_dump_php();
+  }  
+
+  sa_finalCallout();
+  
+  # // tie to debugmode deprecated
+  # if(defined('GSDEBUG') and !pageIsFrontend()) return;
+    
+		echo '<script type="text/javascript">'."\n";    
+		echo '$(document).ready(function() {'."\n";    
+    echo '$("h2:contains(\''. i18n_r('DEBUG_CONSOLE') .'\'):not(\'#sa_debug_title\')").remove();';
+    
+    $collapse = true;
+    
+    if($collapse){
+      echo '
+          //toggle the componenet with class msg_body
+          $("#sa_gsdebug .titlebar").click(function(){
+          
+            if($(this).next().next(".sa_collapse").css("display")=="none"){
+              $(this).next(".sa_expand").removeClass("sa_icon_closed").addClass("sa_icon_open");
+            }
+            
+            $(this).next().next(".sa_collapse").slideToggle(200,function(){
+              if($(this).css("display")=="none"){
+                  $(this).prev(".sa_expand").removeClass("sa_icon_open").addClass("sa_icon_closed");
+              }    
+            });  
+          });
+      ';
+    }
+    
+    echo '});';    
+    echo '</script>';
+    
+    echo '<div id="sa_gsdebug-wrapper">
+    <div class="sa_gsdebug-wrap">';
+		
+		if($sa_console_sent != true){
+			echo '<span id="sa_debug_sig">sa_development</span>
+			<h2 id="sa_debug_title">'.i18n_r('DEBUG_CONSOLE').'</h2>
+			';
+			echo sa_debugMenu();
+		}
+		
+    echo "\n";
+    echo'<div id="sa_gsdebug">';
+       
+    echo '<pre>';
+		echo 'Debug mode is: ' . (GSDEBUG ==1 ? '<b style="color: green">ON</b>' : '<b style="color: red">OFF</b>') . '<br />';
+    if(count($GS_debug) == 0){
+      echo('Log is empty');
+    } 
+    else{
+      foreach ($GS_debug as $log){
+        if(gettype($log) == 'array'){ echo _debugReturn("array found in debugLog",$log); }
+        # if(gettype($log) == 'array'){ echo _debugReturn("array found in debugLog()",$log); } // todo: causes arg parsing on function name in quotes
+        else{ echo($log.'<br />');}
+      }
+    }
+    echo '</pre>';
+    echo '</div>';
+		
+		if($sa_console_sent != true){
+			echo '
+				<div id="sa_debug_footer">
+					<span class="sa_icon_wrap"><span class="sa_icon sa_icon_time"></span>Runtime~: '. number_format(round(($stopwatch->elapsed()*1000),3),3) .' ms</span>
+					<span class="sa_icon_wrap"><span class="sa_icon sa_icon_files"></span>Includes: '. count(get_required_files()) .'</span>
+					<span class="sa_icon_wrap"><span class="sa_icon sa_icon_mempeak"></span>Peak Memory: '. byteSizeConvert(memory_get_peak_usage()) .'</span>
+					<span class="sa_icon_wrap"><span class="sa_icon sa_icon_memlimit"></span>Mem Avail: '. ini_get('memory_limit') .'</span>
+					<span class="sa_icon_wrap"><span class="sa_icon sa_icon_diskfree"></span>Disk Avail: '. byteSizeConvert(disk_free_space("/")) .' / ' . byteSizeConvert(disk_total_space("/")) .'</span>
+				</div>';
+		}
+    echo '</div></div>';
+
+$sa_console_sent = true;
+}
+
+
+// HOOK DEBUGGING
+function sa_echo_hook($hook_id){
+  // echoes hooks onto pages
+  GLOBAL $FRONT_END_HOOKS, $BACK_END_HOOKS;
+  $all_hooks = array_merge($FRONT_END_HOOKS, $BACK_END_HOOKS);
+  echo '<span style="background-color:#FFCCCC;font-size:12px;color:000;border:1px solid #CCC;padding:2px;margin:2px" title="' . $all_hooks[$hook_id] . '">hook: '.$hook_id.'</span>';
+}
+
+function sa_bmark_hook_debug($hook_id){
+  // benchmark hook call times to debug console
+  sa_bmark_debug('hook: ' . $hook_id);
+}
+
+function sa_bmark_hook_print($hook_id){
+  // benchmark hook call times to page
+  sa_bmark_print($hook_id);
+}
+
+// TIMING BENCHMARKING FUNCTIONS
+class StopWatch { 
+    public $total; 
+    public $time; 
+    
+    public function __construct() { 
+        $this->total = $this->time = microtime(true); 
+    } 
+    
+    public function clock() { 
+        return -$this->time + ($this->time = microtime(true)); 
+    } 
+    
+    public function elapsed() { 
+        return microtime(true) - $this->total; 
+    } 
+    
+    public function reset() { 
+        $this->total=$this->time=microtime(true); 
+    } 
+} 
+
+function sa_bmark_print($msg){
+    GLOBAL $stopwatch;
+    echo("<span id=\"pagetime\">bmark: " . $msg . ": " . round($stopwatch->clock(),5) . " / " . round($stopwatch->elapsed(),5) ." seconds</span>"); 
+}
+
+function sa_bmark_debug($msg = ""){
+    GLOBAL $stopwatch;
+    debugLog('<span class="titlebar sad_bmark"><span class="sad_key">bmark</span> : ' . number_format(round($stopwatch->elapsed(),5),5) . "<b> &#711;</b>" . number_format(round($stopwatch->clock(),5),5) . " " . $msg . '</span>');
+}
+
+
+// CORE FUNCTIONS
+function _debugLog(){
+  debugLog(vdump(func_get_args()));
+}
+
+function _debugReturn(){
+  return vdump(func_get_args());
+}
+
+function vdump($args){
+    
+    if(isset($args) and gettype($args)!='array'){
+      $args = func_get_args();
+      $numargs = func_num_args();      
+    }else{
+      $numargs = count($args);
+    }   
+        
+    isset($args[0]) ? $arg1 = $args[0] : $arg1=''; 
+    
+    $backtrace = debug_backtrace();
+    # echo "<pre>".print_r($backtrace,true)."</pre>";
+    $file = $backtrace[1]['file'];
+    //todo: handle evald code[file] => /hsphere/local/home/salverso/tablatronix.com/getsimple_dev/plugins/i18n_base/frontend.class.php(127) : eval()'d code
+    $line = $backtrace[1]['line'];
+    $code = @file($file);    
+    $codeline = $code!=false ? trim($code[$line-1]) : 'anon function call';
+            
+    #$argnames = preg_replace('/'. __FUNCTION__ .'\((.*)\)\s?;/',"$1",$codeline);
+    $argstr = preg_replace('/_debugLog\((.*)\)\s?;.*/',"$1",$codeline);
+    $argnames = array();
+    $argnames = sa_parseFuncArgs($argstr);
+    $argn = 0;  
+    
+    $collapsestr= '<span class="sa_expand sa_icon_open"></span><span class="sa_collapse">';  
+		$bmark_str = bmark_line();
+    $str = "";
+
+    if($numargs > 1 and (gettype($arg1)=='string' and gettype($args[1])!='string') ){
+      // if a string and more arguments, we treat fisrt argumentstring as title
+      $str.=('<span class="titlebar" title="(' . sa_get_path_rel($file) . ' ' . $line . ')">'.htmlspecialchars($arg1).$bmark_str.'</span>');
+      array_shift($args);
+      array_shift($argnames);
+      $numargs--;
+      $str.= $collapsestr;      
+    }    
+    elseif($numargs > 1 || ( $numargs == 1 and (gettype($arg1)=='array' or gettype($arg1)=='object')) ){
+      // if multiple arguments or an array, we add a header for the rows
+      $str.=('<span class="titlebar" title="(' . sa_get_path_rel($file) . ' ' . $line . ')">'.htmlspecialchars($codeline).$bmark_str.'</span>');
+      $str.= $collapsestr;      
+    }
+    elseif($numargs == 1 and gettype($arg1)=='string' and strpos($argnames[0],'$') === false){
+      // if string debug, basic echo, todo: this also catches functions oops
+      $str=('<span title="(' . sa_get_path_rel($file) . ' ' . $line . ')">'.$arg1.'</span>');
+      $str.= '<span>';      
+      return $str;
+    }    
+    elseif($numargs == 0){
+      $str.=('<span class="titlebar" title="(' . sa_get_path_rel($file) . ' ' . $line . ')">'. htmlspecialchars($codeline).$bmark_str .'</span>');
+      $str.= $collapsestr;
+      $str.= '<b>Backtrace</b> &rarr;<br />';
+      $str.= nl2br(sa_debug_backtrace(2));    
+      $str.= '</span>';      
+      return $str;
+    }
+    else{
+      // we add a slight divider for single line traces
+      $str.="<hr>";
+    }
+        
+    ob_start();
+    
+      foreach ($args as $arg){
+        # if($argn > 0) print("\n");
+        if(isset($argnames[$argn])){
+          echo '<b>' . trim($argnames[$argn]) . "</b> &rarr; ";
+          if(gettype($arg) == 'array' and count($arg)>0) echo "\n";
+        }  
+        htmlspecialchars(var_dump($arg));
+        $argn++;
+      }  
+
+    $str .= ob_get_contents();
+  
+    ob_end_clean();
+
+    # debugLog("default output: " . $str."<br/>");  
+    
+    // added &? to datatypes for new reference output from var_dump
+    $str = preg_replace('/=>(\s+)/', ' => ', $str);
+    $str = preg_replace('/=> NULL/', '=> <span class="cm-def">NULL</span>', $str);
+    $str = preg_replace('/(?!=> )NULL/', '<span class="cm-def">NULL</span>', $str);
+    $str = preg_replace('/}\n(\s+)\[/', "}\n\n".'$1[', $str);
+    $str = preg_replace('/(&?float|&?int)\((\-?[\d\.\-E]+)\)/',    " <span class='sa-default'>$1</span> <span class='cm-number'>$2</span>", $str);
+
+    $str = preg_replace('/&?array\((\d+)\) {\s+}\n/',            "<span class='sa-default'>array&bull;$1</span> <b style='color: brown'>[]</b>", $str);
+    $str = preg_replace('/&?array\((\d+)\) {\n/',                "<span class='sa-default'>array&bull;$1</span> <span class='cm-bracket'>{</span>\n<span class='codeindent'>", $str);
+    $str = preg_replace('/&?string\((\d+)\) \"(.*)\"/',          "<span class='sa-default'>str&bull;$1</span> <span class='cm-string'>'$2'</span>", $str);
+    $str = preg_replace('/\[\"(.+)\"\] => /',                    "<span style='color:#666'>'<span class='cm-keyword'>$1</span>'</span> &rarr; ", $str);
+    $str = preg_replace('/\[(\d+)\] => /',                    "<span style='color:#666'>[<span class='cm-keyword'>$1</span>]</span> &rarr; ", $str);
+    $str = preg_replace('/&?object\((\S+)\)#(\d+) \((\d+)\) {\s+}\n/', "<span class='sa-default'>obj&bull;$2</span> <span class='cm-keyword'>$1[$3]</span> <span class='cm-keyword'>{}</span>", $str);
+    $str = preg_replace('/&?object\((\S+)\)#(\d+) \((\d+)\) {\n/', "<span class='sa-default'>obj&bull;$2</span> <span class='cm-keyword'>$1[$3]</span> <span class='cm-keyword'>{</span>\n<span class='codeindent'>", $str);
+    $str = str_replace('bool(false)',                          "<span class='sa-default'>bool&bull;</span><b style='color: red'>false</b>", $str);
+    $str = str_replace('&bool(false)',                          "<span class='sa-default'>bool&bull;</span><b style='color: red'>false</b>", $str);
+    $str = str_replace('bool(true)',                           "<span class='sa-default'>bool&bull;</span><b style='color: green'>true</b>", $str);
+    $str = str_replace('&bool(true)',                           "<span class='sa-default'>bool&bull;</span><b style='color: green'>true</b>", $str);
+    $str = preg_replace('/}\n/',                "</span>\n<span class='cm-bracket'>}</span>\n", $str);
+    $str = str_replace("\n\n","\n",$str);
+    # if($argn == 1) $str = str_replace("\n","",$str);
+    $str = trim($str);
+          
+    return nl2br($str).'</span>';   
+}
+
+
+function sa_finalCallout(){
+}
+
+function sa_dev_ErrorHandler($errno, $errstr='', $errfile='', $errline='',$errcontext=array()){
+    		
+		if (!(error_reporting() & $errno)) {
+        // This error code is not included in error_reporting
+        return;
+    }
+		
+    // check if function has been called by an exception
+    if(func_num_args() == 5) {
+        // called by trigger_error()
+        $exception = null;
+        list($errno, $errstr, $errfile, $errline) = func_get_args();
+
+        # $backtrace = array_reverse(debug_backtrace());
+
+    }else {
+        // caught exception
+        $exc = func_get_arg(0);
+        $errno = $exc->getCode();
+        $errstr = $exc->getMessage();
+        $errfile = $exc->getFile();
+        $errline = $exc->getLine();
+
+        # $backtrace = $exc->getTrace();
+    }		
+		
+    $errorType = array (
+               E_ERROR          => 'ERROR',
+               E_WARNING        => 'WARNING',
+               E_PARSE          => 'PARSING ERROR',
+               E_NOTICE         => 'NOTICE',
+               E_CORE_ERROR     => 'CORE ERROR',
+               E_CORE_WARNING   => 'CORE WARNING',
+               E_COMPILE_ERROR  => 'COMPILE ERROR',
+               E_COMPILE_WARNING => 'COMPILE WARNING',
+               E_USER_ERROR     => 'USER ERROR',
+               E_USER_WARNING   => 'USER WARNING',
+               E_USER_NOTICE    => 'USER NOTICE',
+               E_STRICT         => 'STRICT NOTICE',
+               E_RECOVERABLE_ERROR  => 'RECOVERABLE ERROR'
+               );
+
+    // create error message
+    if (array_key_exists($errno, $errorType)) {
+        $err = $errorType[$errno];
+    } else {
+        $err = 'CAUGHT EXCEPTION';
+    }							 
+		
+    /* Don't execute PHP internal error handler */
+    $collapsestr= '<span class="sa_expand sa_icon_open"></span><span class="sa_collapse">';  		
+		$str = '<span class="titlebar '.strtolower($err).'" title="(' . sa_get_path_rel($errfile) . ' ' . $errline . ')">PHP '.$err.bmark_line().'</span>';	
+		$str.= $collapsestr;
+		$err = sa_debug_handler($errno, $errstr, $errfile, $errline, $errcontext);    
+    debugLog($str.$err);
+		debugLog('<b>Backtrace</b> &rarr;');
+		$backtrace = nl2br(sa_debug_backtrace(3));
+		debugLog($backtrace == '' ? 'backtrace not available' : $backtrace);
+		debugLog('</span>');
+		# _debugLog("ERROR context",$errcontext);	
+
+    switch ($errno) {
+        case E_NOTICE:
+        case E_USER_NOTICE:
+        case E_WARNING:
+        case E_USER_WARNING:
+            return;
+            break;
+
+        default:
+					# exit();
+    }
+		
+    return true;
+}
+
+function sa_debug_handler($errno, $errstr, $errfile, $errline, $errcontext){
+        $ret = '<span class="sa-default">'
+        .'<span class="cm-keyword">'.$errstr.'</span>'
+        .'<span class="cm-comment"> in </span>'
+        .'<span class="cm-bracket-2">[</span>'
+        .'<span class="cm-function" title="'.$errfile.'">'. sa_get_path_rel($errfile) .'</span>'
+        .':'
+        .'<span class="cm-string">'. $errline .'</span>'
+        .'<span class="cm-bracket-2">]</span>' . '</span>';
+		return $ret;
+}
+
+function sa_dev_handleShutdown() {
+		GLOBAL $GS_debug,$sa_console_sent;
+		$error = error_get_last();
+		if($error !== NULL){
+			if($sa_console_sent == true) $GS_debug = array();
+			sa_dev_ErrorHandler($error['type'], $error['message'], $error['file'], $error['line'],array());
+			sa_emptyDoc($error);
+		}else {
+			# echo "shutdown"; 
+		}
+
+		return true;
+}
+
+function sa_emptyDoc($error){
+ 
+	if(isset($error['type']) and ($error['type'] === E_ERROR or $error['type'] === E_USER_ERROR)){
+		$errorclass = 'sa_dev_error';
+	} else { 
+		$errorclass='';
+	}
+
+	echo '<!DOCTYPE html>
+		<html lang="en">
+		<head>
+			<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"  />
+			<title>GETSIMPLE DEVELOPMENT ERROR HANDLER</title>
+			<link href="http://tablatronix.com/getsimple_dev/plugins/sa_development/css/sa_dev_style.css?v=0.1" rel="stylesheet" media="screen">
+			<script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js?v=1.7.1"></script>
+		</head>
+		<body id="load" class="'.$errorclass .'">';
+
+	sa_debugConsole();
+
+	echo '</body></html>';
+		
+}
+
+if(sa_user_is_admin()){
+	register_shutdown_function('sa_dev_handleShutdown');
+	set_error_handler("sa_dev_ErrorHandler");	
+}
+
+?>
