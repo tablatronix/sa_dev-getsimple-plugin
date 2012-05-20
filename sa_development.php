@@ -3,7 +3,7 @@
 /*
 * @Plugin Name: sa_development
 * @Description: Provides alterative debug console
-* @Version: 0.3
+* @Version: 0.4
 * @Author: Shawn Alverson
 * @Author URI: http://tablatronix.com/getsimple-cms/sa-dev-plugin/
 */
@@ -21,7 +21,7 @@ $thisfile=basename(__FILE__, ".php");
 register_plugin(
 	$thisfile,                  //Plugin id
 	'SA Development', 	        //Plugin name
-	'0.3', 		                  //Plugin version
+	'0.4', 		                  //Plugin version
 	'Shawn Alverson',           //Plugin author
 	$sa_url,                    //author website
 	'SA Development Suite',     //Plugin description
