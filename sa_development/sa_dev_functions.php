@@ -71,7 +71,7 @@ function byteSizeConvert($size){ // returns formatted byte string
 function arr_to_csv_line($arr) { // returns array as comma list of args
     $line = array();
     foreach ($arr as $v) {
-        $line[] = is_array($v) ? 'array(' . arr_to_csv_line($v) . ')' : '"' . str_replace('"', '""', $v) . '"';
+	$line[] = is_array($v) or is_object($v) ? 'array(' . arr_to_csv_line($v) . ')' : '"' . str_replace('"', '""', $v) . '"';
     }
     return implode(",", $line);
 }
