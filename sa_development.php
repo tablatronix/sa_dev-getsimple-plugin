@@ -1,33 +1,37 @@
 <?php
 
 /*
+Added parse error catching regardless of error reporting level
+Fixed issue with backtracing object classes
+*/
+
+/*
 * @Plugin Name: sa_development
 * @Description: Provides alterative debug console
-* @Version: 0.4
+* @Version: 0.5
 * @Author: Shawn Alverson
 * @Author URI: http://tablatronix.com/getsimple-cms/sa-dev-plugin/
 */
 
-define('SA_DEBUG',false);
+define('SA_DEBUG',false); // sa dev plugin debug
+# define('GS_DEV',false); // global development constant
 
 $PLUGIN_ID = "sa_development";
 $PLUGINPATH = $SITEURL.'plugins/sa_development/';
-$sa_url = "http://tablatronix.com/getsimple-cms/sa-dev-plugin/";
+$sa_url = 'http://tablatronix.com/getsimple-cms/sa-dev-plugin/';
 
 # get correct id for plugin
-$thisfile=basename(__FILE__, ".php");
-
+$thisfile=basename(__FILE__, ".php");			// Plugin File
+$sa_pname = 		'SA Development';       	//Plugin name
+$sa_pversion =	'0.5'; 		       	      	//Plugin version
+$sa_pauthor = 	'Shawn Alverson';       	//Plugin author
+$sa_purl = 			$sa_url;									//author website
+$sa_pdesc =			'SA Development Suite'; 	//Plugin description
+$sa_ptype =			'';                       //page type - on which admin tab to display
+$sa_pfunc =			'';                       //main function (administration)
+	
 # register plugin
-register_plugin(
-	$thisfile,                  //Plugin id
-	'SA Development', 	        //Plugin name
-	'0.4', 		                  //Plugin version
-	'Shawn Alverson',           //Plugin author
-	$sa_url,                    //author website
-	'SA Development Suite',     //Plugin description
-	'',                         //page type - on which admin tab to display
-	''                          //main function (administration)
-);
+register_plugin($thisfile,$sa_pname,$sa_pversion,$sa_pauthor,$sa_url,$sa_pdesc,$sa_ptype,$sa_pfunc);
 
 // INCLUDES
 require_once('sa_development/hooks.php');
@@ -64,12 +68,15 @@ $SA_DEV_GLOBALS['show_hooks_front']  = sa_getFlag('sa_shf');  // print hooks fro
 $SA_DEV_GLOBALS['show_hooks_back']   = sa_getFlag('sa_shb');  // print hooks backend
 $SA_DEV_GLOBALS['bmark_hooks_front'] = sa_getFlag('sa_bhf');  // benchmark hooks frontend
 $SA_DEV_GLOBALS['bmark_hooks_back']  = sa_getFlag('sa_bhb');  // benchmark hooks backend
-$SA_DEV_GLOBALS['live_hooks']  = sa_getFlag('sa_lh');  // live hooks dump
-$SA_DEV_GLOBALS['php_dump']  = sa_getFlag('sa_php');  // php dump
+$SA_DEV_GLOBALS['live_hooks']  = sa_getFlag('sa_lh');  				// live hooks dump
+$SA_DEV_GLOBALS['php_dump']  = sa_getFlag('sa_php');  				// php dump
 
 $SA_DEV_BUTTONS = array();
 
 $sa_console_sent = false;
+
+$sa_phperr_init = error_reporting();
+$sa_phperr = error_reporting();
 
 // INIT
 sa_initHookDebug();
@@ -197,21 +204,36 @@ function sa_dev_executeheader(){ // assigns assets to queue or header
   $questyle($PLUGIN_ID,GSBOTH);   
 }
 
+function sa_logRequests(){
+	if(isset($_POST) and count($_POST) > 0){
+		_debuglog('PHP $_POST variables',$_POST);
+	}
+	
+	if(isset($_GET) and count($_GET) > 0){
+		_debuglog('PHP $_GET variables',$_GET);
+	}
+	
+}
+
 function sa_debugConsole(){  // Display the log
-  global $GS_debug,$stopwatch,$sa_console_sent;            
+  global $GS_debug,$stopwatch,$sa_console_sent,$sa_phperr_init;            
+	
+	if(!$sa_console_sent){
+		sa_logRequests();
+		
+		if(sa_liveHooks()){
+			# debugTitle('Debugging Hooks');
+			sa_dumpLiveHooks();
+		}
 
-  if(sa_liveHooks()){
-    # debugTitle('Debugging Hooks');
-    sa_dumpLiveHooks();
-  }
+		if(sa_phpDump()){
+			# debugTitle('PHP Dump');
+			sa_dump_php();
+		}  
 
-  if(sa_phpDump()){
-    # debugTitle('PHP Dump');
-    sa_dump_php();
-  }  
-
-  sa_finalCallout();
-  
+		sa_finalCallout();
+	}
+	
   # // tie to debugmode deprecated
   # if(defined('GSDEBUG') and !pageIsFrontend()) return;
     
@@ -245,8 +267,8 @@ function sa_debugConsole(){  // Display the log
     echo '<div id="sa_gsdebug-wrapper">
     <div class="sa_gsdebug-wrap">';
 		
-		if($sa_console_sent != true){
-			echo '<span id="sa_debug_sig">sa_development</span>
+		if(!$sa_console_sent){
+			echo '<span id="sa_debug_sig"><a href="http://tablatronix.com/getsimple-cms/sa-dev-plugin" target="_blank">sa_development</a></span>
 			<h2 id="sa_debug_title">'.i18n_r('DEBUG_CONSOLE').'</h2>
 			';
 			echo sa_debugMenu();
@@ -256,8 +278,15 @@ function sa_debugConsole(){  // Display the log
     echo'<div id="sa_gsdebug">';
        
     echo '<pre>';
-		echo 'Debug mode is: ' . (GSDEBUG ==1 ? '<b style="color: green">ON</b>' : '<b style="color: red">OFF</b>') . '<br />';
-    if(count($GS_debug) == 0){
+
+		if(!$sa_console_sent){		
+			echo 'GS Debug mode is: ' . ((defined('GSDEBUG') and GSDEBUG == 1) ? '<b style="color: green">ON</b>' : '<b style="color: red">OFF</b>') . '<br />';
+			echo 'PHP Error Level: <small><b>(' . $sa_phperr_init . ') ' .error_level_tostring($sa_phperr_init,'|') . '</b></small><hr>';
+		}else{
+			echo 'Post footer alerts<br />';
+		}
+
+		if(count($GS_debug) == 0){
       echo('Log is empty');
     } 
     else{
@@ -282,7 +311,7 @@ function sa_debugConsole(){  // Display the log
 		}
     echo '</div></div>';
 
-$sa_console_sent = true;
+	$sa_console_sent = true;
 }
 
 
@@ -338,7 +367,10 @@ function sa_bmark_debug($msg = ""){
 
 
 // CORE FUNCTIONS
-function _debugLog(){
+function _debugLog(){	
+	if(sa_getErrorChanged()){
+		debugTitle('PHP Error Level changed: <small>(' . error_reporting() . ') ' .error_level_tostring(error_reporting(),'|') . '</small>','notice');	
+	}	
   debugLog(vdump(func_get_args()));
 }
 
@@ -376,7 +408,7 @@ function vdump($args){
     $str = "";
 
     if($numargs > 1 and (gettype($arg1)=='string' and gettype($args[1])!='string') ){
-      // if a string and more arguments, we treat fisrt argumentstring as title
+      // if a string and more arguments, we treat first argumentstring as title
       $str.=('<span class="titlebar" title="(' . sa_get_path_rel($file) . ' ' . $line . ')">'.htmlspecialchars($arg1).$bmark_str.'</span>');
       array_shift($args);
       array_shift($argnames);
@@ -456,9 +488,12 @@ function sa_finalCallout(){
 }
 
 function sa_dev_ErrorHandler($errno, $errstr='', $errfile='', $errline='',$errcontext=array()){
-    		
-		if (!(error_reporting() & $errno)) {
+    
+		# _debugLog(error_reporting(),$errno, $errstr, $errfile, $errline);
+		
+		if (!(error_reporting() & $errno) and $errno!=E_PARSE) {
         // This error code is not included in error_reporting
+				// unless parse error , then we want user to know
         return;
     }
 		
@@ -482,19 +517,19 @@ function sa_dev_ErrorHandler($errno, $errstr='', $errfile='', $errline='',$errco
     }		
 		
     $errorType = array (
-               E_ERROR          => 'ERROR',
-               E_WARNING        => 'WARNING',
-               E_PARSE          => 'PARSING ERROR',
-               E_NOTICE         => 'NOTICE',
-               E_CORE_ERROR     => 'CORE ERROR',
-               E_CORE_WARNING   => 'CORE WARNING',
-               E_COMPILE_ERROR  => 'COMPILE ERROR',
-               E_COMPILE_WARNING => 'COMPILE WARNING',
-               E_USER_ERROR     => 'USER ERROR',
-               E_USER_WARNING   => 'USER WARNING',
-               E_USER_NOTICE    => 'USER NOTICE',
-               E_STRICT         => 'STRICT NOTICE',
-               E_RECOVERABLE_ERROR  => 'RECOVERABLE ERROR'
+               E_ERROR          => 'ERROR', 								// 1
+               E_WARNING        => 'WARNING',								// 2
+               E_PARSE          => 'PARSING ERROR', 				// 4
+               E_NOTICE         => 'NOTICE',								// 8
+               E_CORE_ERROR     => 'CORE ERROR',						// 16
+               E_CORE_WARNING   => 'CORE WARNING',  				// 32
+               E_COMPILE_ERROR  => 'COMPILE ERROR', 				// 64
+               E_COMPILE_WARNING => 'COMPILE WARNING',			// 128
+               E_USER_ERROR     => 'USER ERROR',   					// 256
+               E_USER_WARNING   => 'USER WARNING', 					// 512
+               E_USER_NOTICE    => 'USER NOTICE',  					// 1024
+               E_STRICT         => 'STRICT NOTICE', 				// 2048
+               E_RECOVERABLE_ERROR  => 'RECOVERABLE ERROR' 	// 4096
                );
 
     // create error message
@@ -503,16 +538,18 @@ function sa_dev_ErrorHandler($errno, $errstr='', $errfile='', $errline='',$errco
     } else {
         $err = 'CAUGHT EXCEPTION';
     }							 
-		
+				
     /* Don't execute PHP internal error handler */
     $collapsestr= '<span class="sa_expand sa_icon_open"></span><span class="sa_collapse">';  		
 		$str = '<span class="titlebar '.strtolower($err).'" title="(' . sa_get_path_rel($errfile) . ' ' . $errline . ')">PHP '.$err.bmark_line().'</span>';	
 		$str.= $collapsestr;
 		$err = sa_debug_handler($errno, $errstr, $errfile, $errline, $errcontext);    
     debugLog($str.$err);
-		debugLog('<b>Backtrace</b> &rarr;');
-		$backtrace = nl2br(sa_debug_backtrace(3));
-		debugLog($backtrace == '' ? 'backtrace not available' : $backtrace);
+		if($errno!== E_USER_NOTICE and $errno!== E_NOTICE){
+			debugLog('<b>Backtrace</b> &rarr;');
+			$backtrace = nl2br(sa_debug_backtrace(3));
+			debugLog($backtrace == '' ? 'backtrace not available' : $backtrace);
+		}
 		debugLog('</span>');
 		# _debugLog("ERROR context",$errcontext);	
 
@@ -558,32 +595,99 @@ function sa_dev_handleShutdown() {
 }
 
 function sa_emptyDoc($error){
- 
+	GLOBAL $sa_console_sent;
 	if(isset($error['type']) and ($error['type'] === E_ERROR or $error['type'] === E_USER_ERROR)){
 		$errorclass = 'sa_dev_error';
 	} else { 
 		$errorclass='';
 	}
-
-	echo '<!DOCTYPE html>
-		<html lang="en">
-		<head>
-			<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"  />
-			<title>GETSIMPLE DEVELOPMENT ERROR HANDLER</title>
-			<link href="http://tablatronix.com/getsimple_dev/plugins/sa_development/css/sa_dev_style.css?v=0.1" rel="stylesheet" media="screen">
-			<script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js?v=1.7.1"></script>
-		</head>
-		<body id="load" class="'.$errorclass .'">';
-
-	sa_debugConsole();
-
-	echo '</body></html>';
+	
+	if(!$sa_console_sent){
+		echo '<!DOCTYPE html>
+			<html lang="en">
+			<head>
+				<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"  />
+				<title>GETSIMPLE DEVELOPMENT ERROR HANDLER</title>
+				<link href="http://tablatronix.com/getsimple_dev/plugins/sa_development/css/sa_dev_style.css?v=0.1" rel="stylesheet" media="screen">
+				<script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js?v=1.7.1"></script>
+			</head>
+			<body id="load" class="'.$errorclass .'">';
+		sa_debugConsole();	
+		echo '</body></html>';
+	}else {	
+		sa_debugConsole();	
+	}	
 		
 }
 
 if(sa_user_is_admin()){
 	register_shutdown_function('sa_dev_handleShutdown');
 	set_error_handler("sa_dev_ErrorHandler");	
+}
+
+// unsorted functions
+
+function error_level_tostring($intval, $separator){
+    // credit to the_bug_the_bug @ php.net		
+		$errorlevels = array(
+		    // 4096  => 'E_RECOVERABLE_ERROR',
+        2048  => 'STRICT',
+				2047 	=> 'ALL',
+        1024 	=> 'USER_NOTICE',
+        512 	=> 'USER_WARNING',
+        256 	=> 'USER_ERROR',
+        128 	=> 'COMPILE_WARNING',
+        64 		=> 'COMPILE_ERROR',
+        32 		=> 'CORE_WARNING',
+        16 		=> 'CORE_ERROR',
+        8 		=> 'NOTICE',
+        4 		=> 'PARSE',
+        2 		=> 'WARNING',
+        1 		=> 'ERROR');
+    $result = '';
+    foreach($errorlevels as $number => $name)
+    {
+        if (($intval & $number) == $number) {
+            $result .= ($result != '' ? $separator : '').$name; }
+    }
+    return $result == '' ? 'NONE' : $result;
+}
+
+function sa_getErrorReporting(){
+	// credit to DarkGool @ php.net
+	$bit = ini_get('error_reporting'); 
+	while ($bit > 0) { 
+			for($i = 0, $n = 0; $i <= $bit; $i = 1 * pow(2, $n), $n++) { 
+					$end = $i; 
+			} 
+			$res[] = $end; 
+			$bit = $bit - $end; 
+	} 
+	return $res;
+}
+
+function sa_setErrorReporting($int = 0){
+	// credit to feroz Zahid @ php.net
+	
+	// set PHP error reporting 
+	switch($int) { 
+		case 0: error_reporting(0); break;                                          # 0 - Turn off all error reporting 
+		case 1: error_reporting(E_ERROR | E_WARNING | E_PARSE); break;              # 1 - Running errors 
+		case 2: error_reporting(E_ERROR | E_WARNING | E_PARSE | E_NOTICE); break;   # 2 - Running errors + notices 
+		case 3: error_reporting(E_ALL ^ (E_NOTICE | E_WARNING)); break;             # 3 - All errors except notices and warnings 
+		case 4: error_reporting(E_ALL ^ E_NOTICE); break;                           # 4 - All errors except notices 
+		case 5: error_reporting(E_ALL); break;                                      # 5 - All errors 
+		default: 
+				error_reporting(E_ALL); 																								# DEFAULT to all errors
+		} 
+}
+
+function sa_getErrorChanged(){
+	GLOBAL $sa_phperr;
+	if($sa_phperr != error_reporting()){
+		$sa_phperr = error_reporting();
+		return true;
+	}
 }
 
 ?>
