@@ -65,14 +65,14 @@
     text-shadow:1px 1px 0 rgba(255,255,255,.4);    
   }
 
-  #sa_debug_sig{
-    font-size:0.8em;
-    font-family:Georgia, Times, Times New Roman, serif;
-    color:#777;
+  #sa_debug_sig a{
+    font-size:0.8em !important;
+    font-family:Georgia, Times, Times New Roman, serif !important;
+    color:#777 !important;
     margin:0 0 5px 0;
-    float:right;
-    font-style:italic;
-    text-shadow:1px 1px 0 rgba(255,255,255,.4);    
+    float:right !important;
+    font-style:italic !important;
+    text-shadow:1px 1px 0 rgba(255,255,255,.4) !important;    
   }
   
   #sa_gsdebug{
@@ -140,7 +140,7 @@
 		/* border:1px solid #DF8F90 !important;		 */
 	}
 
-	#sa_gsdebug .titlebar.notice{
+	#sa_gsdebug .titlebar.notice, #sa_gsdebug .titlebar.notice small{
 		color:#FFF !important;
 		background-color:#2850C1 !important;
 		/* border:1px solid #9FC7F5 !important;		 */

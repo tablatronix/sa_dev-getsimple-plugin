@@ -22,7 +22,7 @@ $sa_url = 'http://tablatronix.com/getsimple-cms/sa-dev-plugin/';
 
 # get correct id for plugin
 $thisfile=basename(__FILE__, ".php");			// Plugin File
-$sa_pname = 		'SA Development';       	//Plugin name
+$sa_pname = 			'SA Development';       	//Plugin name
 $sa_pversion =	'0.5'; 		       	      	//Plugin version
 $sa_pauthor = 	'Shawn Alverson';       	//Plugin author
 $sa_purl = 			$sa_url;									//author website
@@ -68,8 +68,8 @@ $SA_DEV_GLOBALS['show_hooks_front']  = sa_getFlag('sa_shf');  // print hooks fro
 $SA_DEV_GLOBALS['show_hooks_back']   = sa_getFlag('sa_shb');  // print hooks backend
 $SA_DEV_GLOBALS['bmark_hooks_front'] = sa_getFlag('sa_bhf');  // benchmark hooks frontend
 $SA_DEV_GLOBALS['bmark_hooks_back']  = sa_getFlag('sa_bhb');  // benchmark hooks backend
-$SA_DEV_GLOBALS['live_hooks']  = sa_getFlag('sa_lh');  				// live hooks dump
-$SA_DEV_GLOBALS['php_dump']  = sa_getFlag('sa_php');  				// php dump
+$SA_DEV_GLOBALS['live_hooks']  = sa_getFlag('sa_lh');  // live hooks dump
+$SA_DEV_GLOBALS['php_dump']  = sa_getFlag('sa_php');  // php dump
 
 $SA_DEV_BUTTONS = array();
 

@@ -29,7 +29,7 @@ function sa_user_is_admin(){
 }
 
 function pageIsFrontend() {
-  // todo: There might be an existing function for this 
+  // the core function for this is broken until 3.2
 	$path = basename(htmlentities($_SERVER['PHP_SELF'], ENT_QUOTES));
 	$file = basename($path,".php");
 	return $file == 'index';
@@ -69,11 +69,13 @@ function byteSizeConvert($size){ // returns formatted byte string
 }
 
 function arr_to_csv_line($arr) { // returns array as comma list of args
+		// todo: fix handlng of object classes
     $line = array();
-    foreach ($arr as $v) {
-        $line[] = is_array($v) ? 'array(' . arr_to_csv_line($v) . ')' : '"' . str_replace('"', '""', $v) . '"';
-    }
-    return implode(",", $line);
+		foreach ($arr as $v) {
+				# _debugLog($v);
+				$line[] = is_array($v) or is_object($v) ? 'array(' . arr_to_csv_line($v) . ')' : '"' . str_replace('"', '""', $v) . '"';
+		}
+		return implode(",", $line);
 }
 
 function sa_array_index($ary,$idx){ // handles all the isset error avoidance bullshit when checking an array for a key that might not exist
@@ -270,8 +272,8 @@ function sa_dumpPhpVars(){ // dumps local vars
   _debugLog(get_defined_vars());
 }
 
-function debugTitle($title,$h=3){ // debuglog as title
-  debugLog("<h$h>$title</h$h>");
+function debugTitle($title,$class=''){ // debuglog as title
+  debugLog("<span class='titlebar $class'>$title</span>");
 }
 
 function debugPair($key,$value){ // debuglog as key pair
@@ -292,29 +294,29 @@ function sa_debugtest(){
   $book->publisher    = "Arthur A. Levine Books";
   $book->amazon_link  = "http://www.amazon.com/dp/0439136369/";
     
-  $tstring = "a string";
-  $tint = 1;
-  $tfloat = 1.2;
-  $tdbl = 7E-10;
-  $tnull = null;
-  $tarray = array();
+  $tstring 	= "a string";
+  $tint 		= 1;
+  $tfloat 	= 1.2;
+  $tdbl 		= 7E-10;
+  $tnull 		= null;
+  $tarray 	= array();
   
   $testary = array(
-  'int' => $tint,
-  'float' => $tfloat,
-  'double' => $tdbl,
-  'string' => $tstring,
-  'null' => $tnull,
+  'int' 				=> $tint,
+  'float' 			=> $tfloat,
+  'double' 			=> $tdbl,
+  'string' 			=> $tstring,
+  'null' 				=> $tnull,
   'empty array' => $tarray,
-  'array' => array(  
-    'int' => $tint,
-    'float' => $tfloat,
-    'string' => $tstring,
-    'nested array' => array(1,2,3),
+  'array' 			=> array(  
+    'int' 				=> $tint,
+    'float' 			=> $tfloat,
+    'string' 			=> $tstring,
+    'nested array'=> array(1,2,3),
   ),
-  'bool true' => true,
-  'bool false' => false,  
-  'object' => new stdClass,
+  'bool true' 	=> true,
+  'bool false' 	=> false,  
+  'object' 			=> new stdClass,
   );  
   
   _debugLog($testary);
