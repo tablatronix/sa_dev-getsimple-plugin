@@ -72,8 +72,7 @@ function arr_to_csv_line($arr) { // returns array as comma list of args
 		// todo: fix handlng of object classes
     $line = array();
 		foreach ($arr as $v) {
-				# _debugLog($v);
-				$line[] = is_array($v) or is_object($v) ? 'array(' . arr_to_csv_line($v) . ')' : '"' . str_replace('"', '""', $v) . '"';
+	$line[] = is_array($v) or is_object($v) ? 'array(' . arr_to_csv_line($v) . ')' : '"' . str_replace('"', '""', $v) . '"';
 		}
 		return implode(",", $line);
 }
