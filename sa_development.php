@@ -488,10 +488,32 @@ function sa_finalCallout(){
 }
 
 function sa_dev_ErrorHandler($errno, $errstr='', $errfile='', $errline='',$errcontext=array()){
-    
+    GLOBAL $sa_phperr_init;
+		
 		# _debugLog(error_reporting(),$errno, $errstr, $errfile, $errline);
 		
-		if (!(error_reporting() & $errno) and $errno!=E_PARSE) {
+		/*  Of particular note is that error_reporting() value will be 0 if
+		 *  the statement that caused the error was prepended by the @ error-control operator.
+		 */ 
+		
+		$errorReporting = error_reporting();
+		
+		// handle supressed errors
+		$debugSuppressed = false;
+		
+		$showSuppressed = false;
+		
+		if((defined('GSDEBUG') and GSDEBUG == 1) and $debugSuppressed == true){
+			#$errorReporting = -1;
+			#$errno=0;
+			$showSuppressed = true;
+			$errno = 0;
+		}
+		
+		# _debugLog(error_reporting(),$errno, $errstr, $errfile, $errline);
+		
+		// Ignore if error reporting is off, unless parse error
+		if (!($errorReporting & $errno) and $errno!=E_PARSE and $showSuppressed != true) {
         // This error code is not included in error_reporting
 				// unless parse error , then we want user to know
         return;
@@ -500,8 +522,8 @@ function sa_dev_ErrorHandler($errno, $errstr='', $errfile='', $errline='',$errco
     // check if function has been called by an exception
     if(func_num_args() == 5) {
         // called by trigger_error()
-        $exception = null;
-        list($errno, $errstr, $errfile, $errline) = func_get_args();
+        #$exception = null;
+        #list($errno, $errstr, $errfile, $errline) = func_get_args();
 
         # $backtrace = array_reverse(debug_backtrace());
 
@@ -517,6 +539,7 @@ function sa_dev_ErrorHandler($errno, $errstr='', $errfile='', $errline='',$errco
     }		
 		
     $errorType = array (
+							 0								=> 'SUPPRESSED',						// 0	
                E_ERROR          => 'ERROR', 								// 1
                E_WARNING        => 'WARNING',								// 2
                E_PARSE          => 'PARSING ERROR', 				// 4
@@ -554,7 +577,8 @@ function sa_dev_ErrorHandler($errno, $errstr='', $errfile='', $errline='',$errco
 		# _debugLog("ERROR context",$errcontext);	
 
     switch ($errno) {
-        case E_NOTICE:
+        case 0:
+				case E_NOTICE:
         case E_USER_NOTICE:
         case E_WARNING:
         case E_USER_WARNING:

@@ -72,7 +72,8 @@ function arr_to_csv_line($arr) { // returns array as comma list of args
 		// todo: fix handlng of object classes
     $line = array();
 		foreach ($arr as $v) {
-	$line[] = is_array($v) or is_object($v) ? 'array(' . arr_to_csv_line($v) . ')' : '"' . str_replace('"', '""', $v) . '"';
+				# _debugLog($v);
+				$line[] = is_array($v) or is_object($v) ? 'array(' . arr_to_csv_line($v) . ')' : '"' . str_replace('"', '""', $v) . '"';
 		}
 		return implode(",", $line);
 }
@@ -159,6 +160,11 @@ function sa_debug_backtrace($skip = 1){
             continue;
         }
 
+        if (!isset ($call['args']))
+        {
+            $call['args'] = array();
+        }				
+				
         if (!isset ($call['file']))
         {
             $call['file'] = '';
@@ -203,7 +209,7 @@ function sa_get_bt_arg(&$arg) { // retreives backtrace arguments
             if (strpos($key, chr(0)) !== false) {
                 $key = '';    // Private variable found
             }
-            $args[] =  '['.$key.'] => '.get_arg($value);
+            $args[] =  '['.$key.'] => '.sa_get_bt_arg($value);
         }
 
         $arg = get_class($arg) . ' Object ('.implode(',', $args).')';
