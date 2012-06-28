@@ -73,7 +73,7 @@ function arr_to_csv_line($arr) { // returns array as comma list of args
     $line = array();
 		foreach ($arr as $v) {
 				# _debugLog($v);
-				$line[] = is_array($v) or is_object($v) ? 'array(' . arr_to_csv_line($v) . ')' : '"' . str_replace('"', '""', $v) . '"';
+				$line[] = ( is_array($v) or is_object($v) ) ? 'array(' . arr_to_csv_line($v) . ')' : '"' . str_replace('"', '""', $v) . '"';
 		}
 		return implode(",", $line);
 }
@@ -151,12 +151,12 @@ function sa_dump_php(){ // Debug dump php enviroment information
 }  
 
 // backtracing
-function sa_debug_backtrace($skip = 1){
-    $traces = debug_backtrace();
+function sa_debug_backtrace($skip = null,$backtrace=null){
+    $traces = isset($backtrace) ? $backtrace : debug_backtrace();
     # _debugLog($traces);
     $ret = array();
     foreach($traces as $i => $call){
-        if ($i < $skip) {
+        if (isset($skip) and $i < $skip) {
             continue;
         }
 
@@ -217,8 +217,17 @@ function sa_get_bt_arg(&$arg) { // retreives backtrace arguments
 }
 
 function sa_btprint(){   
-    return sa_debug_backtrace();
+    return sa_debug_backtrace(1);
 } 
+
+function sadev_btGetFuncIndex($backtrace,$funcname){
+	// get the backtrace index for the specified functionname
+	foreach($backtrace as $key=>$bt){
+		if(isset($bt['function']) and $bt['function'] == $funcname){
+			return $key;
+		}
+	}
+}
 
 // GS debugs
 //
@@ -228,24 +237,31 @@ function bmark_line(){
 	return '<span class="bmark">'.number_format(round(($stopwatch->elapsed()*1000),2),2) . ' ms </span><span class="bmark">' . byteSizeConvert(memory_get_usage()) . '</span>';
 }
 
-function sa_dumpHooks($function = NULL,$exclude = false,$actions = false){
+function sa_dumpHooks($hookname = NULL,$exclude = false,$actions = false){
   // dumps live hooks to debuglog , can filter or exclude
 	global $plugins;
   $sa_plugins = $plugins;
   $collapsestr= '<span class="sa_expand sa_icon_open"></span><span class="sa_collapse">';            
 	$bmark_str = bmark_line();
-  $hookdump = '<span class="titlebar">Dumping live hooks: ' . (isset($function) ? $function : 'All') .$bmark_str.'</span>'.$collapsestr;
+  $hookdump = '<span class="titlebar">Dumping live hooks: ' . (isset($hookname) ? $hookname : 'All') .$bmark_str.'</span>'.$collapsestr;
   
   asort($sa_plugins);
     
   foreach ($sa_plugins as $hook)	{
+		if(substr($hook['hook'],-8,9) == '-sidebar'){
+			$thishook = 'sidebar';
+		}else
+		{
+			$thishook = $hook['hook'];
+		}
+	
     # _debugLog($hook);
-    if(isset($function) and $hook['function'] != $function and $exclude==false) continue;  
-    if(isset($function) and $hook['function'] == $function and $exclude==true) continue;  
-    if($actions == true and ( $hook['function'] == 'createSideMenu' or $hook['function'] == 'createNavTab')) continue;  
+    if(isset($hookname) and $thishook != $hookname and $exclude==false) continue;  
+    if(isset($hookname) and $thishook == $hookname and $exclude==true) continue;  
+    if($actions == true and ( $thishook == 'sidebar' or $thishook == 'nav-tab')) continue;  
     
     if($hook['file']=='sa_development.php') continue; // remove noisy debug hooks
-    
+					
     # debugPair($hook['hook'],implode(', ',$hook['args']));     
 
         $return = '<span class="sa-default"><span><b>'.$hook['hook'] .'</b> &rarr; </span>'
@@ -268,8 +284,8 @@ function sa_dumpHooks($function = NULL,$exclude = false,$actions = false){
 function sa_dumpLiveHooks(){
   // dump all registered hooks
   // sorted, and grouped
-  _debugLog(sa_dumpHooks('createSideMenu')); // sidemenus
-  _debugLog(sa_dumpHooks('createNavTab'));   // nav tabs
+  _debugLog(sa_dumpHooks('sidebar')); // sidemenus
+  _debugLog(sa_dumpHooks('nav-tab'));   // nav tabs
   _debugLog(sa_dumpHooks(NULL,false,true));  // other
 }
 
@@ -324,6 +340,8 @@ function sa_debugtest(){
   'object' 			=> new stdClass,
   );  
   
+	debugLog(print_r($testary,true));
+	
   _debugLog($testary);
   _debugLog($tstring);
   _debugLog($tint);
@@ -375,14 +393,17 @@ debugLog('string');
 debugLog($tstring);
 debugLog($testary);
 
-_debugLog('test title',$testary);
+_debugLog('test title array',$testary);
+_debugLog('test title string','a string');
+_debugLog('test title variable',$tstring);
+
 _debugLog('test inline array',array());
 
 _debugLog($testary);
 
-trigger_error('This is a warning', E_USER_WARNING);
-trigger_error('This is a Notice', E_USER_NOTICE);
-trigger_error('This is a Fatal Error', E_USER_ERROR);
+#trigger_error('This is a warning', E_USER_WARNING);
+#trigger_error('This is a Notice', E_USER_NOTICE);
+#trigger_error('This is a Fatal Error', E_USER_ERROR);
 
 }      
 

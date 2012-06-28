@@ -8,7 +8,7 @@ Fixed issue with backtracing object classes
 /*
 * @Plugin Name: sa_development
 * @Description: Provides alterative debug console
-* @Version: 0.5
+* @Version: 0.6
 * @Author: Shawn Alverson
 * @Author URI: http://tablatronix.com/getsimple-cms/sa-dev-plugin/
 */
@@ -23,7 +23,7 @@ $sa_url = 'http://tablatronix.com/getsimple-cms/sa-dev-plugin/';
 # get correct id for plugin
 $thisfile=basename(__FILE__, ".php");			// Plugin File
 $sa_pname = 			'SA Development';       	//Plugin name
-$sa_pversion =	'0.5'; 		       	      	//Plugin version
+$sa_pversion =	'0.6'; 		       	      	//Plugin version
 $sa_pauthor = 	'Shawn Alverson';       	//Plugin author
 $sa_purl = 			$sa_url;									//author website
 $sa_pdesc =			'SA Development Suite'; 	//Plugin description
@@ -63,6 +63,8 @@ if(sa_user_is_admin()){
 
 
 // GLOBALS
+$debugLogFunc = '_debugLog';
+
 $SA_DEV_GLOBALS = array();
 $SA_DEV_GLOBALS['show_hooks_front']  = sa_getFlag('sa_shf');  // print hooks frontend
 $SA_DEV_GLOBALS['show_hooks_back']   = sa_getFlag('sa_shb');  // print hooks backend
@@ -292,6 +294,10 @@ function sa_debugConsole(){  // Display the log
     else{
       foreach ($GS_debug as $log){
         if(gettype($log) == 'array'){ echo _debugReturn("array found in debugLog",$log); }
+				else if(preg_match('/^(Array\n\().*/',$log)){
+					echo _debugReturn("print_r output found in debuglog",$log);
+					# echo nl2br($log);
+				}
         # if(gettype($log) == 'array'){ echo _debugReturn("array found in debugLog()",$log); } // todo: causes arg parsing on function name in quotes
         else{ echo($log.'<br />');}
       }
@@ -368,6 +374,7 @@ function sa_bmark_debug($msg = ""){
 
 // CORE FUNCTIONS
 function _debugLog(){	
+	/* variable arguments */
 	if(sa_getErrorChanged()){
 		debugTitle('PHP Error Level changed: <small>(' . error_reporting() . ') ' .error_level_tostring(error_reporting(),'|') . '</small>','notice');	
 	}	
@@ -380,36 +387,69 @@ function _debugReturn(){
 
 function vdump($args){
     
+		GLOBAL $debugLogFunc;
+		
+		$debugstr = ''; // for local debugging because we can create infinite loops by using debuglog inside debuglogs
+		
     if(isset($args) and gettype($args)!='array'){
       $args = func_get_args();
       $numargs = func_num_args();      
     }else{
       $numargs = count($args);
     }   
-        
-    isset($args[0]) ? $arg1 = $args[0] : $arg1=''; 
-    
+		
+		// ! backtrace arguments are passed by reference !	
+		// todo: make this totally safe with no chance of modifying arguments.
+		
     $backtrace = debug_backtrace();
-    # echo "<pre>".print_r($backtrace,true)."</pre>";
-    $file = $backtrace[1]['file'];
-    //todo: handle evald code[file] => /hsphere/local/home/salverso/tablatronix.com/getsimple_dev/plugins/i18n_base/frontend.class.php(127) : eval()'d code
-    $line = $backtrace[1]['line'];
+    # echo "<pre>".print_r($backtrace,true)."</pre>";	
+		$lineidx =  sadev_btGetFuncIndex($backtrace,$debugLogFunc);		
+		if(!isset($lineidx)) $lineidx = 1;
+		$funcname = $backtrace[$lineidx]['function'];
+		$file = $backtrace[$lineidx]['file'];
+    //todo: handle evald code eg. [file] => /hsphere/local/home/salverso/tablatronix.com/getsimple_dev/plugins/i18n_base/frontend.class.php(127) : eval()'d code
+    $line = $backtrace[$lineidx]['line'];
     $code = @file($file);    
     $codeline = $code!=false ? trim($code[$line-1]) : 'anon function call';
-            
-    #$argnames = preg_replace('/'. __FUNCTION__ .'\((.*)\)\s?;/',"$1",$codeline);
-    $argstr = preg_replace('/_debugLog\((.*)\)\s?;.*/',"$1",$codeline);
+		
+		/* Finding our originating call in the backtrace so we can extract the code line and argument nesting depth
+		 *
+		 * If using custom function, we have to remove all the get_func_arg array wrappers n deep
+		 * where n is the depth path the normal _debuglog function in the backtrace
+		 * each get_func_args wraps another array around the argument array
+		 * so we reduce it by as many levels as we need to get it back to the original args
+		 * we use a global function name to do this.
+		 * Still trying to figure out a way to figure out the originating call_user_func
+		 * it might be impossible since people might create a very advanced wrapper using debug levels arguments and args
+		 *
+		 */
+		
+		// reduce array depth and adjust arg count
+		if($lineidx>1){
+			for($i=0;$i<$lineidx-1;$i++){
+				$args = $args[0]; 
+			}	
+			$numargs = count($args);	// redo numargs, else it will stay the 1 from func_get_args
+		}	
+				
+    $arg1 = isset($args[0]) ? $args[0] : ''; // avoids constant isset checking in some logic below.
+		
+		#$argnames = preg_replace('/'. __FUNCTION__ .'\((.*)\)\s?;/',"$1",$codeline);
+    $argstr = preg_replace('/.*'.$funcname.'\((.*)\)\s?;.*/',"$1",$codeline);
     $argnames = array();
     $argnames = sa_parseFuncArgs($argstr);
     $argn = 0;  
     
+		# debugLog(print_r($argstr,true));
+		# debugLog(print_r($argnames,true));
+		
     $collapsestr= '<span class="sa_expand sa_icon_open"></span><span class="sa_collapse">';  
 		$bmark_str = bmark_line();
     $str = "";
-
-    if($numargs > 1 and (gettype($arg1)=='string' and gettype($args[1])!='string') ){
+		
+    if($numargs > 1 and gettype($arg1)=='string' and ( gettype($args[1])!='string' or strpos($argnames[1],'$') === 0)){
       // if a string and more arguments, we treat first argumentstring as title
-      $str.=('<span class="titlebar" title="(' . sa_get_path_rel($file) . ' ' . $line . ')">'.htmlspecialchars($arg1).$bmark_str.'</span>');
+      $str.=('<span class="titlebar special" title="(' . sa_get_path_rel($file) . ' ' . $line . ')">'.htmlspecialchars($arg1).$bmark_str.'</span>');
       array_shift($args);
       array_shift($argnames);
       $numargs--;
@@ -417,12 +457,12 @@ function vdump($args){
     }    
     elseif($numargs > 1 || ( $numargs == 1 and (gettype($arg1)=='array' or gettype($arg1)=='object')) ){
       // if multiple arguments or an array, we add a header for the rows
-      $str.=('<span class="titlebar" title="(' . sa_get_path_rel($file) . ' ' . $line . ')">'.htmlspecialchars($codeline).$bmark_str.'</span>');
+      $str.=('<span class="titlebar array object multi" title="(' . sa_get_path_rel($file) . ' ' . $line . ')">'.htmlspecialchars($codeline).$bmark_str.'</span>');
       $str.= $collapsestr;      
     }
     elseif($numargs == 1 and gettype($arg1)=='string' and strpos($argnames[0],'$') === false){
       // if string debug, basic echo, todo: this also catches functions oops
-      $str=('<span title="(' . sa_get_path_rel($file) . ' ' . $line . ')">'.$arg1.'</span>');
+      $str=('<span class="string" title="(' . sa_get_path_rel($file) . ' ' . $line . ')">'.$arg1.'</span>');
       $str.= '<span>';      
       return $str;
     }    
@@ -455,19 +495,38 @@ function vdump($args){
   
     ob_end_clean();
 
-    # debugLog("default output: " . $str."<br/>");  
+	 // cannot use this as it container partial html from the collapse and headers from above
+	 // make new debug debuging
+   #  debugLog("default output: " . $str."<br/>");  
     
+		$str = sa_dev_highlighting($str);
+    $str = trim($str);
+    return nl2br($str).'</span>';   		
+    
+		// debug with backtrace output
+    // return nl2br($str).'<br>'.nl2br(sa_debug_backtrace(null,$backtrace)).'</span>';   
+		// return nl2br($str).'</span><pre>'.nl2br(print_r($backtrace,true)).'</pre>';	   
+}
+
+
+function sa_dev_highlighting($str){
     // added &? to datatypes for new reference output from var_dump
-    $str = preg_replace('/=>(\s+)/', ' => ', $str);
+		// indented are for print_r outputs
+		
+    $str = preg_replace('/=>(\s+)/', ' => ', $str); // remove whitespace
     $str = preg_replace('/=> NULL/', '=> <span class="cm-def">NULL</span>', $str);
     $str = preg_replace('/(?!=> )NULL/', '<span class="cm-def">NULL</span>', $str);
     $str = preg_replace('/}\n(\s+)\[/', "}\n\n".'$1[', $str);
     $str = preg_replace('/(&?float|&?int)\((\-?[\d\.\-E]+)\)/',    " <span class='sa-default'>$1</span> <span class='cm-number'>$2</span>", $str);
-
     $str = preg_replace('/&?array\((\d+)\) {\s+}\n/',            "<span class='sa-default'>array&bull;$1</span> <b style='color: brown'>[]</b>", $str);
     $str = preg_replace('/&?array\((\d+)\) {\n/',                "<span class='sa-default'>array&bull;$1</span> <span class='cm-bracket'>{</span>\n<span class='codeindent'>", $str);
+			$str = preg_replace('/Array\n\(\n/',                "\n<span class='sa-default'>array</span> <span class='cm-bracket'>(</span>\n<span class='codeindent'>", $str);
+			$str = preg_replace('/Array\n\s+\(\n/',                "<span class='sa-default'>array</span> <span class='cm-bracket'>(</span>\n<span class='codeindent'>", $str);
+			$str = preg_replace('/Object\n\s+\(\n/',                "<span class='sa-default'>object</span> <span class='cm-bracket'>(</span>\n<span class='codeindent'>", $str);
     $str = preg_replace('/&?string\((\d+)\) \"(.*)\"/',          "<span class='sa-default'>str&bull;$1</span> <span class='cm-string'>'$2'</span>", $str);
     $str = preg_replace('/\[\"(.+)\"\] => /',                    "<span style='color:#666'>'<span class='cm-keyword'>$1</span>'</span> &rarr; ", $str);
+			$str = preg_replace('/\[([a-zA-Z\s_]+)\]  => /',                    "<span style='color:#666'>'<span class='cm-keyword'>$1</span>'</span> &rarr; ", $str);
+			$str = preg_replace('/\[(\d+)\]  => /',                    "<span style='color:#666'>[<span class='cm-keyword'>$1</span>]</span> &rarr; ", $str);
     $str = preg_replace('/\[(\d+)\] => /',                    "<span style='color:#666'>[<span class='cm-keyword'>$1</span>]</span> &rarr; ", $str);
     $str = preg_replace('/&?object\((\S+)\)#(\d+) \((\d+)\) {\s+}\n/', "<span class='sa-default'>obj&bull;$2</span> <span class='cm-keyword'>$1[$3]</span> <span class='cm-keyword'>{}</span>", $str);
     $str = preg_replace('/&?object\((\S+)\)#(\d+) \((\d+)\) {\n/', "<span class='sa-default'>obj&bull;$2</span> <span class='cm-keyword'>$1[$3]</span> <span class='cm-keyword'>{</span>\n<span class='codeindent'>", $str);
@@ -476,13 +535,11 @@ function vdump($args){
     $str = str_replace('bool(true)',                           "<span class='sa-default'>bool&bull;</span><b style='color: green'>true</b>", $str);
     $str = str_replace('&bool(true)',                           "<span class='sa-default'>bool&bull;</span><b style='color: green'>true</b>", $str);
     $str = preg_replace('/}\n/',                "</span>\n<span class='cm-bracket'>}</span>\n", $str);
+			$str = preg_replace('/\)\n/',                "</span>\n<span class='cm-bracket'>)</span>\n", $str);
     $str = str_replace("\n\n","\n",$str);
     # if($argn == 1) $str = str_replace("\n","",$str);
-    $str = trim($str);
-          
-    return nl2br($str).'</span>';   
-}
-
+		return $str;
+}	
 
 function sa_finalCallout(){
 }
@@ -501,19 +558,19 @@ function sa_dev_ErrorHandler($errno, $errstr='', $errfile='', $errline='',$errco
 		// handle supressed errors
 		$debugSuppressed = false;
 		
-		$showSuppressed = false;
+		$showingSuppressed = false;
 		
 		if((defined('GSDEBUG') and GSDEBUG == 1) and $debugSuppressed == true){
 			#$errorReporting = -1;
 			#$errno=0;
-			$showSuppressed = true;
+			$showingSuppressed = true;
 			$errno = 0;
 		}
 		
 		# _debugLog(error_reporting(),$errno, $errstr, $errfile, $errline);
 		
 		// Ignore if error reporting is off, unless parse error
-		if (!($errorReporting & $errno) and $errno!=E_PARSE and $showSuppressed != true) {
+		if (!($errorReporting & $errno) and $errno!=E_PARSE and $showingSuppressed != true) {
         // This error code is not included in error_reporting
 				// unless parse error , then we want user to know
         return;
@@ -568,7 +625,9 @@ function sa_dev_ErrorHandler($errno, $errstr='', $errfile='', $errline='',$errco
 		$str.= $collapsestr;
 		$err = sa_debug_handler($errno, $errstr, $errfile, $errline, $errcontext);    
     debugLog($str.$err);
-		if($errno!== E_USER_NOTICE and $errno!== E_NOTICE){
+		
+		$backtraceall = true;
+		if( ($errno!== E_USER_NOTICE and $errno!== E_NOTICE) or $backtraceall == true){
 			debugLog('<b>Backtrace</b> &rarr;');
 			$backtrace = nl2br(sa_debug_backtrace(3));
 			debugLog($backtrace == '' ? 'backtrace not available' : $backtrace);
