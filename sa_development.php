@@ -3,6 +3,8 @@
 /*
 Added parse error catching regardless of error reporting level
 Fixed issue with backtracing object classes
+
+Added force on global
 */
 
 /*
@@ -12,6 +14,9 @@ Fixed issue with backtracing object classes
 * @Author: Shawn Alverson
 * @Author URI: http://tablatronix.com/getsimple-cms/sa-dev-plugin/
 */
+
+// global to force console on even when not logged in
+$SA_DEV_ON = isset($SA_DEV_ON) ? $SA_DEV_ON : false;
 
 define('SA_DEBUG',false); // sa dev plugin debug
 # define('GS_DEV',false); // global development constant
@@ -46,7 +51,7 @@ if(SA_DEBUG==true){
 }
 
 // enable only when logged in
-if(sa_user_is_admin()){
+if(sa_user_is_admin() or $SA_DEV_ON){
   add_action('index-posttemplate', 'sa_debugConsole');
   if(SA_DEBUG==true) add_action('footer', 'sa_debugtest'); // debug logging
   add_action('footer', 'sa_debugConsole');
