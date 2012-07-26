@@ -49,7 +49,8 @@ $BACK_END_HOOKS = array(
   'file-uploaded' => 'Fired after a file has been successfully uploaded',
   'file-extras' => 'Fired at the end of the file list',
   'successful-login-start' => '',
-  'successful-login-end' => ''
+  'successful-login-end' => '',
+	'html-editor-init' => 'Called after ckeditor js is output'
 );
 
 $CREATION_HOOKS = array(
