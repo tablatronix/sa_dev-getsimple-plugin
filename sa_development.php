@@ -299,6 +299,7 @@ function sa_debugConsole(){  // Display the log
     else{
       foreach ($GS_debug as $log){
         if(gettype($log) == 'array'){ echo _debugReturn("array found in debugLog",$log); }
+        else if(gettype($log) == 'object'){ echo _debugReturn("object found in debugLog",$log); }
 				else if(preg_match('/^(Array\n\().*/',$log)){
 					echo _debugReturn("print_r output found in debuglog",$log);
 					# echo nl2br($log);
