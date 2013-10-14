@@ -51,21 +51,22 @@ if(SA_DEBUG==true){
 }
 
 // enable only when logged in
-if(sa_user_is_admin() or $SA_DEV_ON){
+if(sa_user_is_admin() || $SA_DEV_ON || (get_filename_id() != 'install' && get_filename_id() != 'setup' && get_filename_id() != 'update')){
   add_action('index-posttemplate', 'sa_debugConsole');
   if(SA_DEBUG==true) add_action('footer', 'sa_debugtest'); // debug logging
   add_action('footer', 'sa_debugConsole');
   if(SA_DEBUG==true) add_action('sa_dev_menu','sa_dev_menu_hook'); // debug dev menus hooks
-}
 
-// asset queing
-// use header hook if older than 3.1
+  // asset queing
+  // 
+  // use header hook if older than 3.1
   if(floatval(GSVERSION) < 3.1){
     add_action('header', 'sa_dev_executeheader');
     $owner = "SA_dev_";
   }  
   else{ sa_dev_executeheader(); }
 
+}
 
 // GLOBALS
 $debugLogFunc = '_debugLog';
