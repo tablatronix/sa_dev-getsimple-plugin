@@ -281,12 +281,36 @@ function sa_dumpHooks($hookname = NULL,$exclude = false,$actions = false){
   return $hookdump.'</span>';
 }
 
+function sa_dumpFilters($filterName = NULL,$exclude = false){
+  // dumps live hooks to debuglog , can filter or exclude
+  global $filters;
+
+  // _debugLog($filters);
+  $sa_filters = $filters;
+  $collapsestr= '<span class="sa_expand sa_icon_open"></span><span class="sa_collapse">';            
+  $hookdump = '<h3>Dumping live filters: ' . (isset($filter) ? $filterName : 'All') .'</h3>'.$collapsestr;
+  
+  asort($sa_filters);
+    
+  foreach ($sa_filters as $filter)  {
+     // _debugLog($filter);
+    if(isset($filterName) and $filter['filter'] != $filterName and $exclude==false) continue;  
+    if(isset($filterName) and $filter['filter'] == $filterName and $exclude==true) continue;  
+    
+        $return = '<span class="sa-default"><span><b>'.$filter['filter'] .'</b> &rarr; </span>'
+        .'<span class="cm-keyword">' . $filter['function'] . '</span>';    
+        $hookdump.=$return.'<br/>';
+  }
+  return $hookdump.'</span>';
+}
+
 function sa_dumpLiveHooks(){
   // dump all registered hooks
   // sorted, and grouped
   _debugLog(sa_dumpHooks('sidebar')); // sidemenus
   _debugLog(sa_dumpHooks('nav-tab'));   // nav tabs
   _debugLog(sa_dumpHooks(NULL,false,true));  // other
+  _debugLog(sa_dumpFilters(NULL,false));  // filters 
 }
 
 function sa_dumpPhpVars(){ // dumps local vars
