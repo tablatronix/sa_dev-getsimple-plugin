@@ -333,7 +333,7 @@ function sa_debugConsole(){  // Display the log
           # echo nl2br($log);
         }
         # if(gettype($log) == 'array'){ echo _debugReturn("array found in debugLog()",$log); } // todo: causes arg parsing on function name in quotes
-        else{ echo($log.'<br />');}
+        else{ echo($log.'<br />');} // todo: this causes ugly newlines, why is this br here ? Removing it seems to fix it, must be a edge case wehre it causes wrap issues with inline string logs
       }
     }
     echo '</pre>';
