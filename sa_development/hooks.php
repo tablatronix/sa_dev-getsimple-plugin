@@ -1,10 +1,12 @@
 <?php
 
 $FILTERS = array(
-  'content'                 =>  'Fiters page content data',
+  'content'                 => 'Fiters page content data',
   'menuitems'               => 'Filters the menu html returned in get_navigation()',
   'pagecache'               => 'filters $pagesarray data before saving (3.3+)',
-  'sitemap'                 => 'filters the $sitemap xmlobj before saving (3.3+)'
+  'sitemap'                 => 'filters the $sitemap xmlobj before saving (3.3+)',
+  'indexid'                 => 'filters the index page $id global',
+  'data_index'              =>  'filters the global page $data_index obj'
 );
 
 $FRONT_END_HOOKS = array(
