@@ -403,30 +403,6 @@ _debugLog(nl2br("
 <span class=cm-link>link</span>
 "));  
 
-_debugLog(nl2br("  
-<span class=cm-keyword>keyword{color: #708; font-weight: bold;}</span>
-<span class=cm-atom>atom{color: #219;}</span>
-<span class=cm-number>number {color: #164; font-weight: bold;}</span>
-<span class=cm-def>def {color: #00f; font-weight: bold;}</span>
-<span class=cm-variable>variable {color: black;}</span>
-<span class=cm-variable-2>variable-2 {color: #05a;}</span>
-<span class=cm-variable-3>variable-3 {color: #0a5;}</span>
-<span class=cm-property>property {color: black;}</span>
-<span class=cm-operator>operator {color: black;}</span>
-<span class=cm-comment>comment {color: #a50;}</span>
-<span class=cm-string>string {color: #a11; font-weight: bold;}</span>
-<span class=cm-meta>meta {color: #555;}</span>
-<span class=cm-error>error {color: #f00;}</span>
-<span class=cm-qualifier>qualifier {color: #555;}</span>
-<span class=cm-builtin>builtin {color: #30a;}</span>
-<span class=cm-bracket>bracket {color: #a11;}</span>
-<span class=cm-tag>tag {color: #170;}</span>
-<span class=cm-attribute>attribute {color: #00c; font-weight:bold;}</span>
-<span class=cm-function>function {color: #219;}</span>
-<span class=cm-function-2>function-2 {color: #219; font-weight:bold;}</span>
-<span class=cm-function-3>function-3 {color: #219; font-weight:bold;}</span>
-"));  
-
 _debugLog('test');
 _debugLog('test',myfunc('test','test'),$tstring);
 _debugLog(my_func('test','test'));  

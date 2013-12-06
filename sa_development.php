@@ -316,7 +316,7 @@ function sa_debugConsole(){  // Display the log
 
     if(!$sa_console_sent){    
       echo 'GS Debug mode is: ' . ((defined('GSDEBUG') and GSDEBUG == 1) ? '<span class="cm-tag"><b>ON</b></span>' : '<span class="cm-error"><b>OFF</b></span>') . '<br />';
-      echo 'PHP Error Level: <small><span class="cm-comment">(' . $sa_phperr_init . ') ' .error_level_tostring($sa_phperr_init,'|') . "</span></small><span class='cm-comment'><hr></span>";
+      echo 'PHP Error Level: <small><span class="cm-comment">(' . $sa_phperr_init . ') ' .error_level_tostring($sa_phperr_init,'|') . "</span></small><span class='divider cm-comment'></span>";
     }else{
       echo 'Post footer alerts<br />';
     }
@@ -585,7 +585,7 @@ function vdump($args){
     }
     else{
       // we add a slight divider for single line traces
-      $str.="<span class='cm-comment'><hr></span>";
+      $str.="<span class='divider cm-comment'></span>";
     }
         
     ob_start();
@@ -761,14 +761,15 @@ function sa_dev_ErrorHandler($errno, $errstr='', $errfile='', $errline='',$errco
 }
 
 function sa_debug_handler($errno, $errstr, $errfile, $errline, $errcontext){
-        $ret = '<span class="sa-default">'
+        $ret = '<span class="cm-default">'
         .'<span class="cm-keyword">'.$errstr.'</span>'
         .'<span class="cm-comment"> in </span>'
         .'<span class="cm-bracket">[</span>'
         .'<span class="cm-atom" title="'.$errfile.'">'. sa_get_path_rel($errfile) .'</span>'
         .':'
         .'<span class="cm-string">'. $errline .'</span>'
-        .'<span class="cm-bracket">]</span>' . '</span>';
+        .'<span class="cm-bracket">]</span>' 
+        . '</span>';
     return $ret;
 }
 

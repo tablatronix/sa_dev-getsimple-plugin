@@ -190,7 +190,7 @@
 		/* border:1px solid #E5DB55 !important;		 */
 	}		
 	
-  #sa_gsdebug hr{
+  #sa_gsdebug .divider{
     /*border-color: #E8E8E8;*/
     border-style: solid;
     border-width: 1px 0 0;
@@ -198,6 +198,7 @@
     margin: 2px 0 0 -8px;
     height: 0;    
     opacity:.2;
+    display:block;
   }
   
   #sa_gsdebug .sad_bmark{
