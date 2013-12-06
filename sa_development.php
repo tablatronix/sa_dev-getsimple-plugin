@@ -237,6 +237,8 @@ function sa_dev_executeheader(){ // assigns assets to queue or header
 
   $regstyle($PLUGIN_ID, $PLUGINPATH.'css/sa_dev_style.css', '0.1', 'screen');
   $questyle($PLUGIN_ID,GSBOTH);   
+
+  queue_script('jquery',GSBOTH);
 }
 
 function sa_logRequests(){
@@ -273,7 +275,7 @@ function sa_debugConsole(){  // Display the log
   # if(defined('GSDEBUG') and !pageIsFrontend()) return;
     
     echo '<script type="text/javascript">'."\n";    
-    echo '$(document).ready(function() {'."\n";    
+    echo 'jQuery(document).ready(function() {'."\n";    
     echo '$("h2:contains(\''. i18n_r('DEBUG_CONSOLE') .'\'):not(\'#sa_debug_title\')").remove();';
     
     $collapse = true;
