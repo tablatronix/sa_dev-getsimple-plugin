@@ -122,7 +122,7 @@
 
   #sa_gsdebug .titlebar{
     padding:0 0 0 16px !important;
-    margin:.5em 0 0 -6px !important;
+    margin:.5em -8px 0 -8px !important;
     display:block;
     font-size:1.2em;
     /*font-weight:bold;*/
@@ -159,7 +159,7 @@
 		float:right;
     background-color:#CECECE !important;
 		display:inline-block;
-		height:16px;
+		height:17px;
 		padding:0 10px;
 		font-weight:bold;
 		font-size:11px;
@@ -195,7 +195,7 @@
     border-style: solid;
     border-width: 1px 0 0;
     clear: both;
-    margin: 2px 0 0 -8px;
+    margin: 1px -8px 0 -8px;
     height: 0;    
     opacity:.2;
     display:block;

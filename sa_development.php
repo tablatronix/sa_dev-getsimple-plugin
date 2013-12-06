@@ -18,7 +18,7 @@ Added force on global
 // global to force console on even when not logged in
 $SA_DEV_ON = isset($SA_DEV_ON) ? $SA_DEV_ON : false;
 
-define('SA_DEBUG',false); // sa dev plugin debug
+define('SA_DEBUG',true); // sa dev plugin debug
 # define('GS_DEV',false); // global development constant
 
 $PLUGIN_ID  = "sa_development";
