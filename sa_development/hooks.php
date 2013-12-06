@@ -1,5 +1,12 @@
 <?php
 
+$FILTERS = array(
+  'content' =>  'Fiters page content data',
+  'menuitems' => 'Filters the menu html returned in get_navigation()',
+  'pagecache' => 'filters $pagesarray data before saving (3.3+)',
+  'sitemap' => 'filters the $sitemap xmlobj before saving (3.3+)'
+);
+
 $FRONT_END_HOOKS = array(
   'theme-header' => 'Fired in <head> section of theme. Requires get_header() in template',
   'theme-footer' => 'Fired in the footer of the theme. Requires get_footer() in template',
@@ -8,12 +15,12 @@ $FRONT_END_HOOKS = array(
   'index-pretemplate' => 'Called before your template files are rendered',
   'index-posttemplate' => 'Called after your template files are rendered',
   'error-404' => 'Called if the page does not exist, before rendering the error page'
-); // 7
+);
 
 $BACK_END_HOOKS = array(
   'admin-pre-header' => 'Called before the header.php template file is loaded (3.1+)',
   'archive-backup' => 'Fired when an archive backup has been created',
-  'caching-save' => 'Fired before pages.xml file (in data/other) is saved for Caching (3.1+)',
+  'caching-save' => 'DEPRECATED - Fired before pages.xml file (in data/other) is saved for Caching (3.1-3.3)',
   'changedata-aftersave' => 'Called after a page is saved (3.1+)',
 	'changedata-updateslug' => 'Called when slug changed on an existing page',
   'changedata-save' => 'Called just before a page is saved',
@@ -31,29 +38,32 @@ $BACK_END_HOOKS = array(
   'healthcheck-extras' => 'Allows additional Health-check entries',
 	'html-editor-init' => 'Called after ckeditor js is output',
   'index-login' => 'Fired above the login form',
-  'logfile_delete' => 'fired when a logfile is deleted',
+  'logfile_delete' => 'Fired when a logfile is deleted',
   'login-reqs' => 'Fired on the login sidebar',
   'logout' => 'Fired when a user logs out',
-  'page-delete' => 'fired when a page is deleted',
+  'page-delete' => 'Fired when a page is deleted',
+  'pagecache-aftersave' => 'Fired after data/other/pages.xml pagecache file is successfully saved (3.3+)',
 	'pages-main' =>	'Fired when the pages maincontent in rendered',
   'plugin-hook' => 'Fired before the Plugin page is rendered.',
   'resetpw-error' => 'Fired when password reset and error',
   'resetpw-success' => 'Fired when password reset and successful',
   'save-sitemap' => 'Fired before the sitemap.xml file is saved',
-  'settings-cpsettings' => 'DEPRECATED! Fired before the settings cp_settings file is created',
+  'settings-cpsettings' => 'DEPRECATED - Fired before the settings cp_settings file is created (2.0-3.0)',
   'settings-user' => 'Fired before the settings user file is created',
-  'settings-user-extras' => 'Fired on the settings page, before �save settings� button in the user section',
+  'settings-user-extras' => 'Fired on the settings page, before `save settings` button in the user section',
   'settings-website' => 'Fired before the settings website page is created',
-  'settings-website-extras' => 'Fired on the settings page, before �save settings� button in the website section',
-  'sitemap-additem' => 'Allow insertion of a new sitemap XML entry',
+  'settings-website-extras' => 'Fired on the settings page, before `save settings` button in the website section',
+  'sitemap-additem' => 'DEPRECATED - Allow insertion of a new sitemap XML entry (-3.1)',
+  'sitemap-aftersave' => 'Called after the sitemap is successfully saved (3.3+)',
   'successful-login-end' => '',
   'successful-login-start' => '',
   'support-extras' => 'Allows additional support setting form entries',
-  'support-save' => 'Fired before cp_settings.xml file is created, allows additional support-extras to be saved',
+  'support-save' => 'DEPRECATED - Fired before cp_settings.xml file is created, allows additional support-extras to be saved (-3.0)',
   'theme-edit-extras' => 'Fired in the theme edit screen before the submit button',
   'theme-extras' => 'Fired after the theme screenshot',
   'welcome-doc-link' => 'Allows additional documentation links on the Welcome page',
-  'welcome-link' => 'Allows additional links on the Welcome page',); // 40
+  'welcome-link' => 'Allows additional links on the Welcome page'
+); 
 
 $CREATION_HOOKS = array(
   'backups-sidebar' => 'Sidebar item on Backups Page',
