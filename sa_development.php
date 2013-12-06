@@ -21,19 +21,19 @@ $SA_DEV_ON = isset($SA_DEV_ON) ? $SA_DEV_ON : false;
 define('SA_DEBUG',false); // sa dev plugin debug
 # define('GS_DEV',false); // global development constant
 
-$PLUGIN_ID = "sa_development";
+$PLUGIN_ID  = "sa_development";
 $PLUGINPATH = $SITEURL.'plugins/sa_development/';
-$sa_url = 'http://tablatronix.com/getsimple-cms/sa-dev-plugin/';
+$sa_url     = 'http://tablatronix.com/getsimple-cms/sa-dev-plugin/';
 
 # get correct id for plugin
-$thisfile=basename(__FILE__, ".php");     // Plugin File
-$sa_pname =       'SA Development';         //Plugin name
-$sa_pversion =  '0.6';                    //Plugin version
-$sa_pauthor =   'Shawn Alverson';         //Plugin author
-$sa_purl =      $sa_url;                  //author website
-$sa_pdesc =     'SA Development Suite';   //Plugin description
-$sa_ptype =     '';                       //page type - on which admin tab to display
-$sa_pfunc =     '';                       //main function (administration)
+$thisfile    = basename(__FILE__, ".php");// Plugin File
+$sa_pname    = 'SA Development';          //Plugin name
+$sa_pversion = '0.6';                     //Plugin version
+$sa_pauthor  = 'Shawn Alverson';          //Plugin author
+$sa_purl     =  $sa_url;                  //author website
+$sa_pdesc    =  'SA Development Suite';   //Plugin description
+$sa_ptype    =  '';                       //page type - on which admin tab to display
+$sa_pfunc    =  '';                       //main function (administration)
   
 # register plugin
 register_plugin($thisfile,$sa_pname,$sa_pversion,$sa_pauthor,$sa_url,$sa_pdesc,$sa_ptype,$sa_pfunc);
@@ -152,16 +152,14 @@ function sa_initFilterDebug(){
   // add hooks for showing and bmarking them
   GLOBAL $SA_DEV_GLOBALS, $FILTERS, $filters; 
 
-  debugTitle('Debugging Filters');
-  
   if(sa_showingFilters()){
+    debugTitle('Debugging Filters');
     _debugLog(__FUNCTION__);
     foreach($FILTERS as $key=>$value){
      // _debugLog(__FUNCTION__,$key);
      add_filter($key, 'sa_echo_filter',array($key));
     }
   }
-  _debugLog($filters);
 }
 
 function sa_debugMenu(){ // outputs the dev menu
@@ -312,13 +310,13 @@ function sa_debugConsole(){  // Display the log
     }
     
     echo "\n";
-    echo'<div id="sa_gsdebug">';
+    echo'<div id="sa_gsdebug" class="cm-s-monokai">';
        
     echo '<pre>';
 
     if(!$sa_console_sent){    
-      echo 'GS Debug mode is: ' . ((defined('GSDEBUG') and GSDEBUG == 1) ? '<b style="color: green">ON</b>' : '<b style="color: red">OFF</b>') . '<br />';
-      echo 'PHP Error Level: <small><b>(' . $sa_phperr_init . ') ' .error_level_tostring($sa_phperr_init,'|') . '</b></small><hr>';
+      echo 'GS Debug mode is: ' . ((defined('GSDEBUG') and GSDEBUG == 1) ? '<span class="cm-tag"><b>ON</b></span>' : '<span class="cm-error"><b>OFF</b></span>') . '<br />';
+      echo 'PHP Error Level: <small><span class="cm-comment">(' . $sa_phperr_init . ') ' .error_level_tostring($sa_phperr_init,'|') . "</span></small><span class='cm-comment'><hr></span>";
     }else{
       echo 'Post footer alerts<br />';
     }
@@ -560,7 +558,7 @@ function vdump($args){
     
     if($numargs > 1 and gettype($arg1)=='string' and ( gettype($args[1])!='string' or strpos($argnames[1],'$') === 0)){
       // if a string and more arguments, we treat first argumentstring as title
-      $str.=('<span class="titlebar special" title="(' . sa_get_path_rel($file) . ' ' . $line . ')">'.htmlspecialchars($arg1).$bmark_str.'</span>');
+      $str.=('<span class="cm-default titlebar special" title="(' . sa_get_path_rel($file) . ' ' . $line . ')">'.htmlspecialchars($arg1).$bmark_str.'</span>');
       array_shift($args);
       array_shift($argnames);
       $numargs--;
@@ -568,7 +566,7 @@ function vdump($args){
     }    
     elseif($numargs > 1 || ( $numargs == 1 and (gettype($arg1)=='array' or gettype($arg1)=='object')) ){
       // if multiple arguments or an array, we add a header for the rows
-      $str.=('<span class="titlebar array object multi" title="(' . sa_get_path_rel($file) . ' ' . $line . ')">'.htmlspecialchars($codeline).$bmark_str.'</span>');
+      $str.=('<span class="cm-default titlebar array object multi" title="(' . sa_get_path_rel($file) . ' ' . $line . ')">'.htmlspecialchars($codeline).$bmark_str.'</span>');
       $str.= $collapsestr;      
     }
     elseif($numargs == 1 and gettype($arg1)=='string' and strpos($argnames[0],'$') === false){
@@ -578,7 +576,7 @@ function vdump($args){
       return $str;
     }    
     elseif($numargs == 0){
-      $str.=('<span class="titlebar" title="(' . sa_get_path_rel($file) . ' ' . $line . ')">'. htmlspecialchars($codeline).$bmark_str .'</span>');
+      $str.=('<span class="cm-default titlebar" title="(' . sa_get_path_rel($file) . ' ' . $line . ')">'. htmlspecialchars($codeline).$bmark_str .'</span>');
       $str.= $collapsestr;
       $str.= '<b>Backtrace</b> &rarr;<br />';
       $str.= nl2br(sa_debug_backtrace(2));    
@@ -587,7 +585,7 @@ function vdump($args){
     }
     else{
       // we add a slight divider for single line traces
-      $str.="<hr>";
+      $str.="<span class='cm-comment'><hr></span>";
     }
         
     ob_start();
@@ -595,7 +593,7 @@ function vdump($args){
       foreach ($args as $arg){
         # if($argn > 0) print("\n");
         if(isset($argnames[$argn])){
-          echo '<b>' . trim($argnames[$argn]) . "</b> &rarr; ";
+          echo '<span class="cm-variable"><b>' . trim($argnames[$argn]) . "</b></span> <span class='cm-tag'>&rarr;</span> ";
           if(gettype($arg) == 'array' and count($arg)>0) echo "\n";
         }  
         htmlspecialchars(var_dump($arg));
@@ -628,23 +626,23 @@ function sa_dev_highlighting($str){
     $str = preg_replace('/=> NULL/', '=> <span class="cm-def">NULL</span>', $str);
     $str = preg_replace('/(?!=> )NULL/', '<span class="cm-def">NULL</span>', $str);
     $str = preg_replace('/}\n(\s+)\[/', "}\n\n".'$1[', $str);
-    $str = preg_replace('/(&?float|&?int)\((\-?[\d\.\-E]+)\)/',    " <span class='sa-default'>$1</span> <span class='cm-number'>$2</span>", $str);
-    $str = preg_replace('/&?array\((\d+)\) {\s+}\n/',            "<span class='sa-default'>array&bull;$1</span> <b style='color: brown'>[]</b>", $str);
-    $str = preg_replace('/&?array\((\d+)\) {\n/',                "<span class='sa-default'>array&bull;$1</span> <span class='cm-bracket'>{</span>\n<span class='codeindent'>", $str);
-      $str = preg_replace('/Array\n\(\n/',                "\n<span class='sa-default'>array</span> <span class='cm-bracket'>(</span>\n<span class='codeindent'>", $str);
-      $str = preg_replace('/Array\n\s+\(\n/',                "<span class='sa-default'>array</span> <span class='cm-bracket'>(</span>\n<span class='codeindent'>", $str);
-      $str = preg_replace('/Object\n\s+\(\n/',                "<span class='sa-default'>object</span> <span class='cm-bracket'>(</span>\n<span class='codeindent'>", $str);
-    $str = preg_replace('/&?string\((\d+)\) \"(.*)\"/',          "<span class='sa-default'>str&bull;$1</span> <span class='cm-string'>'$2'</span>", $str);
-    $str = preg_replace('/\[\"(.+)\"\] => /',                    "<span style='color:#666'>'<span class='cm-keyword'>$1</span>'</span> &rarr; ", $str);
-      $str = preg_replace('/\[([a-zA-Z\s_]+)\]  => /',                    "<span style='color:#666'>'<span class='cm-keyword'>$1</span>'</span> &rarr; ", $str);
-      $str = preg_replace('/\[(\d+)\]  => /',                    "<span style='color:#666'>[<span class='cm-keyword'>$1</span>]</span> &rarr; ", $str);
-    $str = preg_replace('/\[(\d+)\] => /',                    "<span style='color:#666'>[<span class='cm-keyword'>$1</span>]</span> &rarr; ", $str);
-    $str = preg_replace('/&?object\((\S+)\)#(\d+) \((\d+)\) {\s+}\n/', "<span class='sa-default'>obj&bull;$2</span> <span class='cm-keyword'>$1[$3]</span> <span class='cm-keyword'>{}</span>", $str);
-    $str = preg_replace('/&?object\((\S+)\)#(\d+) \((\d+)\) {\n/', "<span class='sa-default'>obj&bull;$2</span> <span class='cm-keyword'>$1[$3]</span> <span class='cm-keyword'>{</span>\n<span class='codeindent'>", $str);
-    $str = str_replace('bool(false)',                          "<span class='sa-default'>bool&bull;</span><b style='color: red'>false</b>", $str);
-    $str = str_replace('&bool(false)',                          "<span class='sa-default'>bool&bull;</span><b style='color: red'>false</b>", $str);
-    $str = str_replace('bool(true)',                           "<span class='sa-default'>bool&bull;</span><b style='color: green'>true</b>", $str);
-    $str = str_replace('&bool(true)',                           "<span class='sa-default'>bool&bull;</span><b style='color: green'>true</b>", $str);
+    $str = preg_replace('/(&?float|&?int)\((\-?[\d\.\-E]+)\)/',    " <span class='cm-default'>$1</span> <span class='cm-number'>$2</span>", $str);
+    $str = preg_replace('/&?array\((\d+)\) {\s+}\n/',            "<span class='cm-default'>array&bull;$1</span> <span class='cm-bracket'><b>[]</b></span>", $str);
+    $str = preg_replace('/&?array\((\d+)\) {\n/',                "<span class='cm-default'>array&bull;$1</span> <span class='cm-bracket'>{</span>\n<span class='codeindent'>", $str);
+      $str = preg_replace('/Array\n\(\n/',                "\n<span class='cm-default'>array</span> <span class='cm-bracket'>(</span>\n<span class='codeindent'>", $str);
+      $str = preg_replace('/Array\n\s+\(\n/',                "<span class='cm-default'>array</span> <span class='cm-bracket'>(</span>\n<span class='codeindent'>", $str);
+      $str = preg_replace('/Object\n\s+\(\n/',                "<span class='cm-default'>object</span> <span class='cm-bracket'>(</span>\n<span class='codeindent'>", $str);
+    $str = preg_replace('/&?string\((\d+)\) \"(.*)\"/',          "<span class='cm-default'>str&bull;$1</span> <span class='cm-string'>'$2'</span>", $str);
+    $str = preg_replace('/\[\"(.+)\"\] => /',                    "<span style='color:#666'>'<span class='cm-string'>$1</span>'</span> <span class='cm-tag'>&rarr;</span> ", $str);
+      $str = preg_replace('/\[([a-zA-Z\s_]+)\]  => /',                    "<span style='color:#666'>'<span class='cm-string'>$1</span>'</span> <span class='cm-tag'>&rarr;</span> ", $str);
+      $str = preg_replace('/\[(\d+)\]  => /',                    "<span style='color:#666'>[<span class='cm-string'>$1</span>]</span> <span class='cm-tag'>&rarr;</span> ", $str);
+    $str = preg_replace('/\[(\d+)\] => /',                    "<span style='color:#666'>[<span class='cm-string'>$1</span>]</span> <span class='cm-tag'>&rarr;</span> ", $str);
+    $str = preg_replace('/&?object\((\S+)\)#(\d+) \((\d+)\) {\s+}\n/', "<span class='cm-default'>obj&bull;$2</span> <span class='cm-keyword'>$1[$3]</span> <span class='cm-keyword'>{}</span>", $str);
+    $str = preg_replace('/&?object\((\S+)\)#(\d+) \((\d+)\) {\n/', "<span class='cm-default'>obj&bull;$2</span> <span class='cm-keyword'>$1[$3]</span> <span class='cm-keyword'>{</span>\n<span class='codeindent'>", $str);
+    $str = str_replace('bool(false)',                          "<span class='cm-default'>bool&bull;</span><span class='cm-number'><b>false</b></span>", $str);
+    $str = str_replace('&bool(false)',                          "<span class='cm-default'>bool&bull;</span><span class='cm-number'><b>false</b></span>", $str);
+    $str = str_replace('bool(true)',                           "<span class='cm-default'>bool&bull;</span><span class='cm-number'><b>true</b></span>", $str);
+    $str = str_replace('&bool(true)',                           "<span class='cm-default'>bool&bull;</span><span class='cm-number'><b>true</b></span>", $str);
     $str = preg_replace('/}\n/',                "</span>\n<span class='cm-bracket'>}</span>\n", $str);
       $str = preg_replace('/\)\n/',                "</span>\n<span class='cm-bracket'>)</span>\n", $str);
     $str = str_replace("\n\n","\n",$str);
@@ -739,7 +737,7 @@ function sa_dev_ErrorHandler($errno, $errstr='', $errfile='', $errline='',$errco
     
     $backtraceall = true;
     if( ($errno!== E_USER_NOTICE and $errno!== E_NOTICE) or $backtraceall == true){
-      debugLog('<b>Backtrace</b> &rarr;');
+      debugLog('<span class="cm-default"><b>Backtrace</b></span><span class="cm-tag"> &rarr; </span>');
       $backtrace = nl2br(sa_debug_backtrace(3));
       debugLog($backtrace == '' ? 'backtrace not available' : $backtrace);
     }
@@ -766,11 +764,11 @@ function sa_debug_handler($errno, $errstr, $errfile, $errline, $errcontext){
         $ret = '<span class="sa-default">'
         .'<span class="cm-keyword">'.$errstr.'</span>'
         .'<span class="cm-comment"> in </span>'
-        .'<span class="cm-bracket-2">[</span>'
-        .'<span class="cm-function" title="'.$errfile.'">'. sa_get_path_rel($errfile) .'</span>'
+        .'<span class="cm-bracket">[</span>'
+        .'<span class="cm-atom" title="'.$errfile.'">'. sa_get_path_rel($errfile) .'</span>'
         .':'
         .'<span class="cm-string">'. $errline .'</span>'
-        .'<span class="cm-bracket-2">]</span>' . '</span>';
+        .'<span class="cm-bracket">]</span>' . '</span>';
     return $ret;
 }
 

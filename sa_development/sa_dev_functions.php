@@ -185,17 +185,17 @@ function sa_debug_backtrace($skip = null,$backtrace=null){
             }
         }        
         
-        $ret[] = '<span class="sa-default"><span class="">#'.str_pad($i - $skip, 3, ' ') . '</span>'
-        .'<span class="cm-keyword">' . $object.$call['function'] . '</span>'
-        .'<span class="cm-bracket-2">(</span>'
-        .'<span class="cm-meta">' . arr_to_csv_line($call['args']) .'</span>'
-        .'<span class="cm-bracket-2">)</span>'
+        $ret[] = '<span class="cm-default"><span class="cm-default">#'.str_pad($i - $skip, 3, ' ') . '</span> '
+        .'<span class="cm-variable">' . $object.$call['function'] . '</span>'
+        .'<span class="cm-bracket">(</span>'
+        .'<span class="">' . arr_to_csv_line($call['args']) .'</span>'
+        .'<span class="cm-bracket">)</span>'
         .'<span class="cm-comment"> called at </span>'
-        .'<span class="cm-bracket-2">[</span>'
-        .'<span class="cm-function" title="'.$call['file'].'">'. sa_get_path_rel($call['file']) .'</span>'
+        .'<span class="cm-bracket">[</span>'
+        .'<span class="cm-atom" title="'.$call['file'].'">'. sa_get_path_rel($call['file']) .'</span>'
         .':'
         .'<span class="cm-string">'. $call['line'] .'</span>'
-        .'<span class="cm-bracket-2">]</span>' . '</span>';
+        .'<span class="cm-bracket">]</span>' . '</span>';
     }
 
     return implode("\n",$ret);
@@ -264,17 +264,17 @@ function sa_dumpHooks($hookname = NULL,$exclude = false,$actions = false){
 					
     # debugPair($hook['hook'],implode(', ',$hook['args']));     
 
-        $return = '<span class="sa-default"><span><b>'.$hook['hook'] .'</b> &rarr; </span>'
-        .'<span class="cm-keyword">' . $hook['function'] . '</span>'
-        .'<span class="cm-bracket-2">(</span>'
-        .'<span class="cm-meta">' . arr_to_csv_line($hook['args']) .'</span>'
-        .'<span class="cm-bracket-2">)</span>'
+        $return = '<span class="cm-default"><span><b>'.$hook['hook'] .'</b><span class="cm-tag"> &rarr; </span></span>'
+        .'<span class="cm-variable">' . $hook['function'] . '</span>'
+        .'<span class="cm-bracket">(</span>'
+        .'<span class="">' . arr_to_csv_line($hook['args']) .'</span>'
+        .'<span class="cm-bracket">)</span>'
         .'<span class="cm-comment"> File </span>'
-        .'<span class="cm-bracket-2">[</span>'
-        .'<span class="cm-function" title="'.$hook['file'].'">'. sa_get_path_rel($hook['file']) .'</span>'
+        .'<span class="cm-bracket">[</span>'
+        .'<span class="cm-atom" title="'.$hook['file'].'">'. sa_get_path_rel($hook['file']) .'</span>'
         .':'
         .'<span class="cm-string">'. $hook['line'] .'</span>'
-        .'<span class="cm-bracket-2">]</span>' . '</span>';
+        .'<span class="cm-bracket">]</span>' . '</span>';
     
         $hookdump.=$return.'<br/>';
   }
@@ -288,7 +288,7 @@ function sa_dumpFilters($filterName = NULL,$exclude = false){
   // _debugLog($filters);
   $sa_filters = $filters;
   $collapsestr= '<span class="sa_expand sa_icon_open"></span><span class="sa_collapse">';            
-  $hookdump = '<h3>Dumping live filters: ' . (isset($filter) ? $filterName : 'All') .'</h3>'.$collapsestr;
+  $hookdump = '<span class="titlebar">Dumping live filters: ' . (isset($filter) ? $filterName : 'All') .'</span>'.$collapsestr;
   
   asort($sa_filters);
     
@@ -364,7 +364,7 @@ function sa_debugtest(){
   'object' 			=> new stdClass,
   );  
   
-	debugLog(print_r($testary,true));
+	// debugLog(print_r($testary,true));
 	
   _debugLog($testary);
   _debugLog($tstring);
@@ -384,6 +384,24 @@ function sa_debugtest(){
   #sa_bmark_debug('vdump BEGIN');
   #for($i=0;$i<50;$i++){ vdump($_SERVER);}
   #sa_bmark_debug('vdump END');        
+
+_debugLog(nl2br("  
+<span class=cm-default>default</span>
+<span class=cm-comment>comment</span>
+<span class=cm-atom>atom</span>
+<span class=cm-number>number</span>
+<span class=cm-property>property</span>
+<span class=cm-attribute>attribute</span>
+<span class=cm-keyword>keyword</span>
+<span class=cm-string>string</span>
+<span class=cm-variable>variable</span>
+<span class=cm-variable-2>variable-2</span>
+<span class=cm-def>def</span>
+<span class=cm-error>error</span>
+<span class=cm-bracket>bracket</span>
+<span class=cm-tag>tag</span>
+<span class=cm-link>link</span>
+"));  
 
 _debugLog(nl2br("  
 <span class=cm-keyword>keyword{color: #708; font-weight: bold;}</span>
@@ -425,9 +443,9 @@ _debugLog('test inline array',array());
 
 _debugLog($testary);
 
-#trigger_error('This is a warning', E_USER_WARNING);
-#trigger_error('This is a Notice', E_USER_NOTICE);
-#trigger_error('This is a Fatal Error', E_USER_ERROR);
+trigger_error('This is a warning', E_USER_WARNING);
+trigger_error('This is a Notice', E_USER_NOTICE);
+trigger_error('This is a Fatal Error', E_USER_ERROR);
 
 }      
 
