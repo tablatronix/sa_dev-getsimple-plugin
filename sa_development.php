@@ -378,6 +378,10 @@ function sa_bmark_debug($msg = ""){
     debugLog('<span class="titlebar sad_bmark"><span class="sad_key">bmark</span> : ' . number_format(round($stopwatch->elapsed(),5),5) . "<b> &#711;</b>" . number_format(round($stopwatch->clock(),5),5) . " " . $msg . '</span>');
 }
 
+function sa_bmark_reset(){
+  $stopwatch->reset();
+}
+
 
 // CORE FUNCTIONS
 function _debugLog(){	
