@@ -409,7 +409,7 @@ _debugLog(my_func('test','test'));
 
 debugLog('string');
 debugLog($tstring);
-debugLog($testary);
+// debugLog($testary);
 
 _debugLog('test title array',$testary);
 _debugLog('test title string','a string');

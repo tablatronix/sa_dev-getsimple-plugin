@@ -282,7 +282,7 @@ function sa_debugConsole(){  // Display the log
       echo '
           //toggle the componenet with class msg_body
           $("#sa_gsdebug .titlebar").click(function(){
-          
+
             if($(this).next().next(".sa_collapse").css("display")=="none"){
               $(this).next(".sa_expand").removeClass("sa_icon_closed").addClass("sa_icon_open");
             }
@@ -294,11 +294,26 @@ function sa_debugConsole(){  // Display the log
             });  
           });
       ';
-    }
-    
+        
+    echo "
+      function collapseAll(){
+        $('.sa_collapse').hide();  
+        $('.sa_expand').removeClass('sa_icon_open').addClass('sa_icon_closed');
+      }  
+
+      function expandAll(){
+        $('.sa_collapse').show();  
+        $('.sa_expand').removeClass('sa_icon_closed').addClass('sa_icon_open');
+      }  
+
+      $('#sa_gsdebug .collapseall').on('click',collapseAll);
+      $('#sa_gsdebug .expandall').on('click',expandAll);
+
+    ";
+
     echo '});';    
     echo '</script>';
-    
+    }
     echo '<div id="sa_gsdebug-wrapper">
     <div class="sa_gsdebug-wrap">';
     
@@ -311,7 +326,7 @@ function sa_debugConsole(){  // Display the log
     
     echo "\n";
     echo'<div id="sa_gsdebug" class="cm-s-monokai">';
-       
+    echo '<span id="collapser" class="cm-comment"><a class="collapseall">collapse</a><span> | </span><a class="expandall">expand</a></span>';
     echo '<pre>';
 
     if(!$sa_console_sent){    
@@ -326,14 +341,18 @@ function sa_debugConsole(){  // Display the log
     } 
     else{
       foreach ($GS_debug as $log){
+        // array found
         if(gettype($log) == 'array'){ echo _debugReturn("array found in debugLog",$log); }
+        // obj found
         else if(gettype($log) == 'object'){ echo _debugReturn("object found in debugLog",$log); }
+        // print_r array output found
         else if(preg_match('/^(Array\n\().*/',$log)){
           echo _debugReturn("print_r output found in debuglog",$log);
           # echo nl2br($log);
         }
         # if(gettype($log) == 'array'){ echo _debugReturn("array found in debugLog()",$log); } // todo: causes arg parsing on function name in quotes
-        else{ echo($log.'<br />');} // todo: this causes ugly newlines, why is this br here ? Removing it seems to fix it, must be a edge case wehre it causes wrap issues with inline string logs
+        // String
+        else echo '<div class="cm-default">'.$log.'</div>';
       }
     }
     echo '</pre>';
@@ -727,21 +746,25 @@ function sa_dev_ErrorHandler($errno, $errstr='', $errfile='', $errline='',$errco
     } else {
         $err = 'CAUGHT EXCEPTION';
     }              
-        
+    
+    $out = '';    
     /* Don't execute PHP internal error handler */
-    $collapsestr= '<span class="sa_expand sa_icon_open"></span><span class="sa_collapse">';     
-    $str = '<span class="titlebar '.strtolower($err).'" title="(' . sa_get_path_rel($errfile) . ' ' . $errline . ')">PHP '.$err.bmark_line().'</span>'; 
+    $collapsestr = '<span class="sa_expand sa_icon_open"></span><span class="sa_collapse">';     
+    $str = '<span class="ERROR"><span class="titlebar '.strtolower($err).'" title="(' . sa_get_path_rel($errfile) . ' ' . $errline . ')">PHP '.$err.bmark_line().'</span>'; 
     $str.= $collapsestr;
     $err = sa_debug_handler($errno, $errstr, $errfile, $errline, $errcontext);    
-    debugLog($str.$err);
+    
+    $out .= $str.$err;
     
     $backtraceall = true;
     if( ($errno!== E_USER_NOTICE and $errno!== E_NOTICE) or $backtraceall == true){
-      debugLog('<span class="cm-default"><b>Backtrace</b></span><span class="cm-tag"> &rarr; </span>');
+      $out .= '<span class="cm-default"><b>Backtrace</b></span><span class="cm-tag"> &rarr; </span>';
       $backtrace = nl2br(sa_debug_backtrace(3));
-      debugLog($backtrace == '' ? 'backtrace not available' : $backtrace);
+      $out .= $backtrace == '' ? 'backtrace not available' : $backtrace;
     }
-    debugLog('</span>');
+    
+    $out .= '</span>';
+    debugLog($out);
     # _debugLog("ERROR context",$errcontext); 
 
     switch ($errno) {

@@ -120,6 +120,24 @@
     min-width:500px;
   }
 
+  #sa_gsdebug #collapser{
+    margin:2px 5px 0 0 ;
+    float:right;
+  }
+  
+  #sa_gsdebug #collapser span{
+    opacity:.2;
+  } 
+
+  #sa_gsdebug #collapser a{
+    opacity:.3;
+  }
+
+  #sa_gsdebug #collapser a:hover{
+    opacity: 1.0;
+    color: inherit;
+  }
+
   #sa_gsdebug .titlebar{
     padding:0 0 0 16px !important;
     margin:.5em -8px 0 -8px !important;
@@ -130,6 +148,7 @@
     /*background-color:#E8E8E8;*/
     background-color: rgba(133, 133, 133, 0.2);
     min-width:500px;
+    cursor : pointer;
   }
 	
 	#sa_gsdebug .titlebar .sa_icon{
@@ -294,6 +313,7 @@
 */
 
 .sa_expand {
+  pointer-events: none;
   display:block;
   color:#000 !important;
   /* font-style:italic !important; */
