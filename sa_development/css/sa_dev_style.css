@@ -50,11 +50,12 @@
     margin-top: 0 auto;
     font-weight:normal;
     background-color:#DDD;
-    padding:3px 0 10px 0;
+    padding:3px 0 5px 0;
   }
   
   .sa_gsdebug-wrap{
     margin:10px;
+    margin-bottom:5px;
   }
 
   #sa_debug_title {
@@ -352,6 +353,7 @@
   color:#777;
   font-size:10px !important;   
   vertical-align:middle;
+  margin-top:3px;
 }
 
 .sa_icon_wrap {
@@ -373,23 +375,23 @@
 }
 
 .sa_icon_mempeak{
-  background-position: -209px -126px !important;
+  background-position: -209px -130px !important;
 }
 
 .sa_icon_memlimit{
-  background-position: -176px -110px !important;
+  background-position: -176px -114px !important;
 }
 
 .sa_icon_time{
-  background-position: -336px -110px !important;
+  background-position: -336px -114px !important;
 }
 
 .sa_icon_files{
-  background-position: -287px -94px !important;
+  background-position: -287px -98px !important;
 }
 
 .sa_icon_diskfree{
-  background-position: -353px -110px !important;
+  background-position: -353px -114px !important;
 }
 
 /* codemirror styles */
