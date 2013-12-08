@@ -274,7 +274,7 @@ function sa_debugConsole(){  // Display the log
     
     echo '<script type="text/javascript">'."\n";    
     echo 'jQuery(document).ready(function() {'."\n";    
-    echo '$("h2:contains(\''. i18n_r('DEBUG_CONSOLE') .'\'):not(\'#sa_debug_title\')").remove();';
+    echo '$("h2:contains(\''. i18n_r('DEBUG_CONSOLE') .'\'):not(\'#sa_debug_header\')").remove();';
     
     $collapse = true;
     
@@ -318,8 +318,9 @@ function sa_debugConsole(){  // Display the log
     <div class="sa_gsdebug-wrap">';
     
     if(!$sa_console_sent){
-      echo '<span id="sa_debug_sig"><a href="http://tablatronix.com/getsimple-cms/sa-dev-plugin" target="_blank">sa_development</a></span>
-      <h2 id="sa_debug_title">'.i18n_r('DEBUG_CONSOLE').'</h2>
+      echo '
+      <span id="sa_debug_sig"><a href="http://tablatronix.com/getsimple-cms/sa-dev-plugin" target="_blank">sa_development</a></span>
+      <a id="sa_debug_title" href="#sa_debug_title">'.i18n_r('DEBUG_CONSOLE').'</a>
       ';
       echo sa_debugMenu();
     }

@@ -58,12 +58,18 @@
     margin-bottom:5px;
   }
 
-  #sa_debug_title {
+  #sa_gsdebug-wrapper #sa_debug_title {
     font-size:18px;
     font-family:Georgia, Times, Times New Roman, serif;
     color:#777;
     margin:0 0 5px 0;
-    text-shadow:1px 1px 0 rgba(255,255,255,.4);    
+    text-shadow:1px 1px 0 rgba(255,255,255,.4);   
+    
+    /* add space to anchor head to breath */
+    margin-top: -24px;
+    padding-top: 24px;
+    display:inline-block; 
+    outline: none;      
   }
 
   #sa_debug_sig a{
