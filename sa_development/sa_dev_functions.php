@@ -410,6 +410,7 @@ _debugLog(my_func('test','test'));
 debugLog('string');
 debugLog($tstring);
 debugLog($testary);
+debugLog(print_r($testary,true));
 
 _debugLog('test title array',$testary);
 _debugLog('test title string','a string');
@@ -418,6 +419,10 @@ _debugLog('test title variable',$tstring);
 _debugLog('test inline array',array());
 
 _debugLog($testary);
+
+$html = '<strong style="color:magenta">Strong</strong><ul><li>List</li></ul>';
+_debugLog($html);
+_debugLog(array($html));
 
 trigger_error('This is a warning', E_USER_WARNING);
 trigger_error('This is a Notice', E_USER_NOTICE);

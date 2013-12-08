@@ -591,16 +591,17 @@ function vdump($args){
     }
     elseif($numargs == 1 and gettype($arg1)=='string' and strpos($argnames[0],'$') === false){
       // if string debug, basic echo, todo: this also catches functions oops
-      $str=('<span class="string" title="(' . sa_get_path_rel($file) . ' ' . $line . ')">'.$arg1.'</span>');
+      $str=('<span class="string" title="(' . sa_get_path_rel($file) . ' ' . $line . ')">'.htmlspecialchars($arg1, ENT_QUOTES, 'UTF-8').'</span>');
       $str.= '<span>';      
       return $str;
     }    
     elseif($numargs == 0){
+      // empty do backtrace
       $str.=('<span class="cm-default titlebar" title="(' . sa_get_path_rel($file) . ' ' . $line . ')">'. htmlspecialchars($codeline).$bmark_str .'</span>');
       $str.= $collapsestr;
       $str.= '<b>Backtrace</b> &rarr;<br />';
       $str.= nl2br(sa_debug_backtrace(2));    
-      $str.= '</span>';      
+      $str.= '</span>';         
       return $str;
     }
     else{
@@ -608,21 +609,20 @@ function vdump($args){
       $str.="<span class='divider cm-comment'></span>";
     }
         
-    ob_start();
     
       foreach ($args as $arg){
         # if($argn > 0) print("\n");
         if(isset($argnames[$argn])){
-          echo '<span class="cm-variable"><b>' . trim($argnames[$argn]) . "</b></span> <span class='cm-tag'>&rarr;</span> ";
-          if(gettype($arg) == 'array' and count($arg)>0) echo "\n";
-        }  
-        htmlspecialchars(var_dump($arg));
+          $str.= '<span class="cm-variable"><b>' . trim($argnames[$argn]) . "</b></span> <span class='cm-tag'>&rarr;</span> ";
+          if(gettype($arg) == 'array' and count($arg)>0) echo "\n"; // push array contents to new line
+        }
+
+        ob_start();
+        var_dump($arg);
+        $dump = ob_get_clean();
+        $str .= htmlspecialchars($dump,ENT_NOQUOTES);
         $argn++;
       }  
-
-    $str .= ob_get_contents();
-  
-    ob_end_clean();
 
    // cannot use this as it container partial html from the collapse and headers from above
    // make new debug debuging
@@ -642,27 +642,27 @@ function sa_dev_highlighting($str){
     // added &? to datatypes for new reference output from var_dump
     // indented are for print_r outputs
     
-    $str = preg_replace('/=>(\s+)/', ' => ', $str); // remove whitespace
-    $str = preg_replace('/=> NULL/', '=> <span class="cm-def">NULL</span>', $str);
-    $str = preg_replace('/(?!=> )NULL/', '<span class="cm-def">NULL</span>', $str);
+    $str = preg_replace('/=&gt;(\s+)/', ' => ', $str); // remove whitespace
+    $str = preg_replace('/=&gt; NULL/', '=> <span class="cm-def">NULL</span>', $str);
+    $str = preg_replace('/(?!=&gt; )NULL/', '<span class="cm-def">NULL</span>', $str);
     $str = preg_replace('/}\n(\s+)\[/', "}\n\n".'$1[', $str);
-    $str = preg_replace('/(&?float|&?int)\((\-?[\d\.\-E]+)\)/',    " <span class='cm-default'>$1</span> <span class='cm-number'>$2</span>", $str);
-    $str = preg_replace('/&?array\((\d+)\) {\s+}\n/',            "<span class='cm-default'>array&bull;$1</span> <span class='cm-bracket'><b>[]</b></span>", $str);
-    $str = preg_replace('/&?array\((\d+)\) {\n/',                "<span class='cm-default'>array&bull;$1</span> <span class='cm-bracket'>{</span>\n<span class='codeindent'>", $str);
+    $str = preg_replace('/((?:&amp;)?float|(?:&amp;)?int)\((\-?[\d\.\-E]+)\)/',    " <span class='cm-default'>$1</span> <span class='cm-number'>$2</span>", $str);
+    $str = preg_replace('/(?:&amp;)?array\((\d+)\) {\s+}\n/',            "<span class='cm-default'>array&bull;$1</span> <span class='cm-bracket'><b>[]</b></span>", $str);
+    $str = preg_replace('/(?:&amp;)?array\((\d+)\) {\n/',                "<span class='cm-default'>array&bull;$1</span> <span class='cm-bracket'>{</span>\n<span class='codeindent'>", $str);
       $str = preg_replace('/Array\n\(\n/',                "\n<span class='cm-default'>array</span> <span class='cm-bracket'>(</span>\n<span class='codeindent'>", $str);
       $str = preg_replace('/Array\n\s+\(\n/',                "<span class='cm-default'>array</span> <span class='cm-bracket'>(</span>\n<span class='codeindent'>", $str);
       $str = preg_replace('/Object\n\s+\(\n/',                "<span class='cm-default'>object</span> <span class='cm-bracket'>(</span>\n<span class='codeindent'>", $str);
-    $str = preg_replace('/&?string\((\d+)\) \"(.*)\"/',          "<span class='cm-default'>str&bull;$1</span> <span class='cm-string'>'$2'</span>", $str);
+    $str = preg_replace('/(?:&amp;)?string\((\d+)\) \"(.*)\"/',          "<span class='cm-default'>str&bull;$1</span> <span class='cm-string'>'$2'</span>", $str);
     $str = preg_replace('/\[\"(.+)\"\] => /',                    "<span style='color:#666'>'<span class='cm-string'>$1</span>'</span> <span class='cm-tag'>&rarr;</span> ", $str);
       $str = preg_replace('/\[([a-zA-Z\s_]+)\]  => /',                    "<span style='color:#666'>'<span class='cm-string'>$1</span>'</span> <span class='cm-tag'>&rarr;</span> ", $str);
       $str = preg_replace('/\[(\d+)\]  => /',                    "<span style='color:#666'>[<span class='cm-string'>$1</span>]</span> <span class='cm-tag'>&rarr;</span> ", $str);
     $str = preg_replace('/\[(\d+)\] => /',                    "<span style='color:#666'>[<span class='cm-string'>$1</span>]</span> <span class='cm-tag'>&rarr;</span> ", $str);
-    $str = preg_replace('/&?object\((\S+)\)#(\d+) \((\d+)\) {\s+}\n/', "<span class='cm-default'>obj&bull;$2</span> <span class='cm-keyword'>$1[$3]</span> <span class='cm-keyword'>{}</span>", $str);
-    $str = preg_replace('/&?object\((\S+)\)#(\d+) \((\d+)\) {\n/', "<span class='cm-default'>obj&bull;$2</span> <span class='cm-keyword'>$1[$3]</span> <span class='cm-keyword'>{</span>\n<span class='codeindent'>", $str);
+    $str = preg_replace('/(?:&amp;)?object\((\S+)\)#(\d+) \((\d+)\) {\s+}\n/', "<span class='cm-default'>obj&bull;$2</span> <span class='cm-keyword'>$1[$3]</span> <span class='cm-keyword'>{}</span>", $str);
+    $str = preg_replace('/(?:&amp;)?object\((\S+)\)#(\d+) \((\d+)\) {\n/', "<span class='cm-default'>obj&bull;$2</span> <span class='cm-keyword'>$1[$3]</span> <span class='cm-keyword'>{</span>\n<span class='codeindent'>", $str);
     $str = str_replace('bool(false)',                          "<span class='cm-default'>bool&bull;</span><span class='cm-number'><b>false</b></span>", $str);
-    $str = str_replace('&bool(false)',                          "<span class='cm-default'>bool&bull;</span><span class='cm-number'><b>false</b></span>", $str);
+    $str = str_replace('&amp;bool(false)',                          "<span class='cm-default'>bool&bull;</span><span class='cm-number'><b>false</b></span>", $str);
     $str = str_replace('bool(true)',                           "<span class='cm-default'>bool&bull;</span><span class='cm-number'><b>true</b></span>", $str);
-    $str = str_replace('&bool(true)',                           "<span class='cm-default'>bool&bull;</span><span class='cm-number'><b>true</b></span>", $str);
+    $str = str_replace('&amp;bool(true)',                           "<span class='cm-default'>bool&bull;</span><span class='cm-number'><b>true</b></span>", $str);
     $str = preg_replace('/}\n/',                "</span>\n<span class='cm-bracket'>}</span>\n", $str);
       $str = preg_replace('/\)\n/',                "</span>\n<span class='cm-bracket'>)</span>\n", $str);
     $str = str_replace("\n\n","\n",$str);
