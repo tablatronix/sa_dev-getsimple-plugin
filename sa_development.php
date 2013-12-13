@@ -11,7 +11,7 @@
 // global to force console on even when not logged in
 $SA_DEV_ON = isset($SA_DEV_ON) ? $SA_DEV_ON : false;
 
-define('SA_DEBUG',true); // sa dev plugin debug
+define('SA_DEBUG',false); // sa dev plugin debug
 # define('GS_DEV',false); // global development constant
 
 $PLUGIN_ID  = "sa_development";
@@ -651,21 +651,25 @@ function sa_dev_highlighting($str){
     // added &? to datatypes for new reference output from var_dump
     // indented are for print_r outputs
     
-    $str = preg_replace('/=&gt;(\s+)/', ' => ', $str); // remove whitespace
-    $str = preg_replace('/=&gt; NULL/', '=> <span class="cm-def">NULL</span>', $str);
-    $str = preg_replace('/(?!=&gt; )NULL/', '<span class="cm-def">NULL</span>', $str);
+    $str = preg_replace('/"('.PHP_EOL.')"/', urlencode(PHP_EOL), $str); // remove newlines when values
+
+    $str = preg_replace('/=&gt;(\s+)/', ' &gt; ', $str); // remove whitespace
+    // $str = preg_replace('/&gt; NULL/', '&gt; <span class="cm-def">NULL</span>', $str); // array nulls
+    $str = preg_replace('/(\s)NULL/', ' <span class="cm-def">NULL</span>', $str); // string nulls, just 'NULL'
     $str = preg_replace('/}\n(\s+)\[/', "}\n\n".'$1[', $str);
-    $str = preg_replace('/((?:&amp;)?float|(?:&amp;)?int)\((\-?[\d\.\-E]+)\)/',    " <span class='cm-default'>$1</span> <span class='cm-number'>$2</span>", $str);
+    $str = preg_replace('/((?:&amp;)?float|(?:&amp;)?int)\((\-?[\d\.\-E]+)\)/',    " <span class='cm-default'>$1</span> <span class='cm-number'>$2</span>", $str); // float(n.n) | int(n)
+    $str = preg_replace('/((?:&amp;)?float)\((\-?NAN+)\)/',    " <span class='cm-default'>$1</span> <span class='cm-def'>$2 <span class='cm-comment'>(Not a Number)</span></span>", $str); // float(NAN)
+    $str = preg_replace('/((?:&amp;)?float)\((\-?INF+)\)/',    " <span class='cm-default'>$1</span> <span class='cm-def'>$2 <span class='cm-comment'>(Infinity)</span></span>", $str); // float(INF)
     $str = preg_replace('/(?:&amp;)?array\((\d+)\) {\s+}\n/',            "<span class='cm-default'>array&bull;$1</span> <span class='cm-bracket'><b>[]</b></span>", $str);
     $str = preg_replace('/(?:&amp;)?array\((\d+)\) {\n/',                "<span class='cm-default'>array&bull;$1</span> <span class='cm-bracket'>{</span>\n<span class='codeindent'>", $str);
       $str = preg_replace('/Array\n\(\n/',                "\n<span class='cm-default'>array</span> <span class='cm-bracket'>(</span>\n<span class='codeindent'>", $str);
       $str = preg_replace('/Array\n\s+\(\n/',                "<span class='cm-default'>array</span> <span class='cm-bracket'>(</span>\n<span class='codeindent'>", $str);
       $str = preg_replace('/Object\n\s+\(\n/',                "<span class='cm-default'>object</span> <span class='cm-bracket'>(</span>\n<span class='codeindent'>", $str);
     $str = preg_replace('/(?:&amp;)?string\((\d+)\) \"(.*)\"/',          "<span class='cm-default'>str&bull;$1</span> <span class='cm-string'>'$2'</span>", $str);
-    $str = preg_replace('/\[\"(.+)\"\] => /',                    "<span style='color:#666'>'<span class='cm-string'>$1</span>'</span> <span class='cm-tag'>&rarr;</span> ", $str);
-      $str = preg_replace('/\[([a-zA-Z\s_]+)\]  => /',                    "<span style='color:#666'>'<span class='cm-string'>$1</span>'</span> <span class='cm-tag'>&rarr;</span> ", $str);
-      $str = preg_replace('/\[(\d+)\]  => /',                    "<span style='color:#666'>[<span class='cm-string'>$1</span>]</span> <span class='cm-tag'>&rarr;</span> ", $str);
-    $str = preg_replace('/\[(\d+)\] => /',                    "<span style='color:#666'>[<span class='cm-string'>$1</span>]</span> <span class='cm-tag'>&rarr;</span> ", $str);
+    $str = preg_replace('/\[\"(.+)\"\] &gt; /',                    "<span style='color:#666'>'<span class='cm-string'>$1</span>'</span> <span class='cm-tag'>&rarr;</span> ", $str);
+      $str = preg_replace('/\[([a-zA-Z\s_]+)\]  &gt; /',                    "<span style='color:#666'>'<span class='cm-string'>$1</span>'</span> <span class='cm-tag'>&rarr;</span> ", $str);
+      $str = preg_replace('/\[(\d+)\]  &gt; /',                    "<span style='color:#666'>[<span class='cm-string'>$1</span>]</span> <span class='cm-tag'>&rarr;</span> ", $str);
+    $str = preg_replace('/\[(\d+)\] &gt; /',                    "<span style='color:#666'>[<span class='cm-string'>$1</span>]</span> <span class='cm-tag'>&rarr;</span> ", $str);
     $str = preg_replace('/(?:&amp;)?object\((\S+)\)#(\d+) \((\d+)\) {\s+}\n/', "<span class='cm-default'>obj&bull;$2</span> <span class='cm-keyword'>$1[$3]</span> <span class='cm-keyword'>{}</span>", $str);
     $str = preg_replace('/(?:&amp;)?object\((\S+)\)#(\d+) \((\d+)\) {\n/', "<span class='cm-default'>obj&bull;$2</span> <span class='cm-keyword'>$1[$3]</span> <span class='cm-keyword'>{</span>\n<span class='codeindent'>", $str);
     $str = str_replace('bool(false)',                          "<span class='cm-default'>bool&bull;</span><span class='cm-number'><b>false</b></span>", $str);
@@ -923,7 +927,7 @@ function sa_getErrorChanged(){
   }
 }
 
-add_action('settings-website-extras','sa_settings_extras');
+// add_action('settings-website-extras','sa_settings_extras');
 
 function sa_settings_extras(){
   // echo 'sa_settings_extras';
@@ -932,12 +936,16 @@ function sa_settings_extras(){
 
 
 /**
+  @fixed: @float(NAN 
+  @fixed: @float(INF
+  @fixed: @todo: backtrace does not show current function shows last include and stops
+  
   @todo: colors highlighting and html syntax highlighting
   @todo: append console to end of document attempt to take out of flow for fatal php errors, as they mess up layout, also load asset detection so not loading twice on fatal past header
   @todo: backtrace line show
-  @todo: backtrace does not show current function shows last include and stops
-  @todo script timeout handling reporting last function running
+  @todo: script timeout handling reporting last function running
   @todo: highlight path paths, filename
+  @todo: javascript handlers, ajax handlers, error handlers, console output of php errors
+  @todo: write proper parser to replace the preg replacers 
 **/
-
 ?>

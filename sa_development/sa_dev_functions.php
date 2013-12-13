@@ -308,10 +308,10 @@ function sa_dumpFilters($filterName = NULL,$exclude = false){
 function sa_dumpLiveHooks(){
   // dump all registered hooks
   // sorted, and grouped
-  _debugLog(sa_dumpHooks('sidebar')); // sidemenus
-  _debugLog(sa_dumpHooks('nav-tab'));   // nav tabs
-  _debugLog(sa_dumpHooks(NULL,false,true));  // other
-  _debugLog(sa_dumpFilters(NULL,false));  // filters 
+  debugLog(sa_dumpHooks('sidebar')); // sidemenus
+  debugLog(sa_dumpHooks('nav-tab'));   // nav tabs
+  debugLog(sa_dumpHooks(NULL,false,true));  // other
+  debugLog(sa_dumpFilters(NULL,false));  // filters 
 }
 
 function sa_dumpPhpVars(){ // dumps local vars
@@ -357,15 +357,26 @@ function sa_debugtest(){
   'array' 			=> array(  
     'int' 				=> $tint,
     'float' 			=> $tfloat,
-    'string' 			=> $tstring,
+    'NULL'        => NULL,
+    'string'      => $tstring,
     'nested array'=> array(1,2,3),
   ),
-  'bool true' 	=> true,
-  'bool false' 	=> false,  
+  'bool true'   => true,
+  'bool false'  => false, 
   'object' 			=> new stdClass,
   );  
   
-	// debugLog(print_r($testary,true));
+	var_dump($testary);
+  // var_dump($tnull);
+  
+  $testary2 = array(
+    'testary1' => $testary,
+    $testary
+  );
+
+  _debugLog($testary2);
+
+  // debugLog(print_r($testary,true));
 	
   _debugLog($testary);
   _debugLog($tstring);
