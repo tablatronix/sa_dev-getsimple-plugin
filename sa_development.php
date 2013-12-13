@@ -1,13 +1,6 @@
 <?php
 
 /*
-Added parse error catching regardless of error reporting level
-Fixed issue with backtracing object classes
-
-Added force on global
-*/
-
-/*
 * @Plugin Name: sa_development
 * @Description: Provides alterative debug console
 * @Version: 0.6
@@ -327,6 +320,7 @@ function sa_debugConsole(){  // Display the log
     
     echo "\n";
     echo'<div id="sa_gsdebug" class="cm-s-monokai">';
+    echo'<div id="float"></div>';
     echo '<span id="collapser" class="cm-comment"><a class="collapseall">collapse</a><span> | </span><a class="expandall">expand</a></span>';
     echo '<pre>';
 
@@ -501,6 +495,17 @@ function sa_bmark_reset(){
 }
 
 
+// output formatting
+
+function sa_get_titlebar($file,$line,$text){
+  $bmark_str = bmark_line();
+  return 'title="(' . sa_get_path_rel($file) . ' ' . $line . ')">'.$text.$bmark_str.'</span>' ;
+}
+
+function sa_get_codeline($line,$codeline){
+  return '<span class="cm-comment lineno">'.$line.':</span>' . $codeline;
+}
+
 // CORE FUNCTIONS
 function _debugLog(){ 
   /* variable arguments */
@@ -528,7 +533,7 @@ function vdump($args){
     }   
     
     // ! backtrace arguments are passed by reference !  
-    // todo: make this totally safe with no chance of modifying arguments.
+    // todo: make this totally safe with no chance of modifying arguments. make copies of everything
     
     $backtrace = debug_backtrace();
     # echo "<pre>".print_r($backtrace,true)."</pre>"; 
@@ -536,7 +541,7 @@ function vdump($args){
     if(!isset($lineidx)) $lineidx = 1;
     $funcname = $backtrace[$lineidx]['function'];
     $file = $backtrace[$lineidx]['file'];
-    //todo: handle evald code eg. [file] => /hsphere/local/home/salverso/tablatronix.com/getsimple_dev/plugins/i18n_base/frontend.class.php(127) : eval()'d code
+    // @todo: handle evald code eg. [file] => /hsphere/local/home/salverso/tablatronix.com/getsimple_dev/plugins/i18n_base/frontend.class.php(127) : eval()'d code
     $line = $backtrace[$lineidx]['line'];
     $code = @file($file);    
     $codeline = $code!=false ? trim($code[$line-1]) : 'anon function call';
@@ -544,13 +549,16 @@ function vdump($args){
     /* Finding our originating call in the backtrace so we can extract the code line and argument nesting depth
      *
      * If using custom function, we have to remove all the get_func_arg array wrappers n deep
-     * where n is the depth path the normal _debuglog function in the backtrace
+     * where n is the depth past the normal _debuglog function in the backtrace
      * each get_func_args wraps another array around the argument array
      * so we reduce it by as many levels as we need to get it back to the original args
      * we use a global function name to do this.
      * Still trying to figure out a way to figure out the originating call_user_func
      * it might be impossible since people might create a very advanced wrapper using debug levels arguments and args
-     *
+     * one option would be to recursivly strip all nested arrays containing a single array
+     * another is to use a wrapper function or class to add internal data to each get_func_array and wrappers must call this instead of get_func_array,
+     *  makes nesting predictable, even if it adds more levels.
+     *  It is possible I am simply missing something here that is obvious.
      */
     
     // reduce array depth and adjust arg count
@@ -562,6 +570,7 @@ function vdump($args){
     } 
         
     $arg1 = isset($args[0]) ? $args[0] : ''; // avoids constant isset checking in some logic below.
+    // todo: breaks nulls
     
     #$argnames = preg_replace('/'. __FUNCTION__ .'\((.*)\)\s?;/',"$1",$codeline);
     $argstr = preg_replace('/.*'.$funcname.'\((.*)\)\s?;.*/',"$1",$codeline);
@@ -576,8 +585,8 @@ function vdump($args){
     $bmark_str = bmark_line();
     $str = "";
     
-    if($numargs > 1 and gettype($arg1)=='string' and ( gettype($args[1])!='string' or strpos($argnames[1],'$') === 0)){
-      // if a string and more arguments, we treat first argumentstring as title
+    if($numargs > 1 and gettype($arg1)=='string' and !empty($arg1) and ( gettype($args[1])!='string' or strpos($argnames[1],'$') === 0)){
+      // if a string and more arguments, we treat first argumentstring as title, and shift it off the arg array
       $str.=('<span class="cm-default titlebar special" title="(' . sa_get_path_rel($file) . ' ' . $line . ')">'.htmlspecialchars($arg1).$bmark_str.'</span>');
       array_shift($args);
       array_shift($argnames);
@@ -586,7 +595,7 @@ function vdump($args){
     }    
     elseif($numargs > 1 || ( $numargs == 1 and (gettype($arg1)=='array' or gettype($arg1)=='object')) ){
       // if multiple arguments or an array, we add a header for the rows
-      $str.=('<span class="cm-default titlebar array object multi" title="(' . sa_get_path_rel($file) . ' ' . $line . ')">'.htmlspecialchars($codeline).$bmark_str.'</span>');
+      $str.=('<span class="cm-default titlebar array object multi"' . sa_get_titlebar($file,$line, sa_get_codeline($line,$codeline) ) );
       $str.= $collapsestr;      
     }
     elseif($numargs == 1 and gettype($arg1)=='string' and strpos($argnames[0],'$') === false){
@@ -597,9 +606,9 @@ function vdump($args){
     }    
     elseif($numargs == 0){
       // empty do backtrace
-      $str.=('<span class="cm-default titlebar" title="(' . sa_get_path_rel($file) . ' ' . $line . ')">'. htmlspecialchars($codeline).$bmark_str .'</span>');
+      $str.=('<span class="cm-default titlebar"'.sa_get_titlebar($file,$line, sa_get_codeline($line,$codeline) ) );
       $str.= $collapsestr;
-      $str.= '<b>Backtrace</b> &rarr;<br />';
+      $str.= '<b>Backtrace</b><span class="cm-tag"> &rarr;</span><br />';
       $str.= nl2br(sa_debug_backtrace(2));    
       $str.= '</span>';         
       return $str;
@@ -759,8 +768,8 @@ function sa_dev_ErrorHandler($errno, $errstr='', $errfile='', $errline='',$errco
     
     $backtraceall = true;
     if( ($errno!== E_USER_NOTICE and $errno!== E_NOTICE) or $backtraceall == true){
-      $out .= '<span class="cm-default"><b>Backtrace</b></span><span class="cm-tag"> &rarr; </span>';
-      $backtrace = nl2br(sa_debug_backtrace(3));
+      $out .= '<div><span class="cm-default"><b>Backtrace</b></span><span class="cm-tag"> &rarr; </span></div>';
+      $backtrace = nl2br(sa_debug_backtrace(2)); // skip level = 2,  skipping sa_debug_backtrace(), sa_dev_errorhandler()
       $out .= $backtrace == '' ? 'backtrace not available' : $backtrace;
     }
     
@@ -786,14 +795,14 @@ function sa_dev_ErrorHandler($errno, $errstr='', $errfile='', $errline='',$errco
 
 function sa_debug_handler($errno, $errstr, $errfile, $errline, $errcontext){
         $ret = '<span class="cm-default">'
-        .'<span class="cm-keyword">'.$errstr.'</span>'
+        .'<span class="cm-variable-2">'.$errstr.'</span>'
         .'<span class="cm-comment"> in </span>'
         .'<span class="cm-bracket">[</span>'
         .'<span class="cm-atom" title="'.$errfile.'">'. sa_get_path_rel($errfile) .'</span>'
         .':'
         .'<span class="cm-string">'. $errline .'</span>'
         .'<span class="cm-bracket">]</span>' 
-        . '</span>';
+        . '</span><span class="cm-comment divider" style="opacity:.8;"></span>';
     return $ret;
 }
 
@@ -812,7 +821,7 @@ function sa_dev_handleShutdown() {
 }
 
 function sa_emptyDoc($error){
-  GLOBAL $sa_console_sent;
+  GLOBAL $sa_console_sent, $SITEURL;
   if(isset($error['type']) and ($error['type'] === E_ERROR or $error['type'] === E_USER_ERROR)){
     $errorclass = 'sa_dev_error';
   } else { 
@@ -825,12 +834,19 @@ function sa_emptyDoc($error){
       <head>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"  />
         <title>GETSIMPLE DEVELOPMENT ERROR HANDLER</title>
-        <link href="http://tablatronix.com/getsimple_dev/plugins/sa_development/css/sa_dev_style.css?v=0.1" rel="stylesheet" media="screen">
+        <link href="'.$SITEURL.'/plugins/sa_development/css/sa_dev_style.css?v=0.1" rel="stylesheet" media="screen">
         <script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js?v=1.7.1"></script>
+        <style text/css>
+          #sa_gsdebug-wrapper{
+            /* fix for fatal broken pages, break out of container */
+            position:absolute;
+            left:0;
+          }
+        </style>
       </head>
-      <body id="load" class="'.$errorclass .'">';
+      <body id="load" class="'.$errorclass .'"><div class="'.$errorclass .'">';
     sa_debugConsole();  
-    echo '</body></html>';
+    echo '</body></div></html>';
   }else { 
     sa_debugConsole();  
   } 
@@ -870,8 +886,8 @@ function error_level_tostring($intval, $separator){
     return $result == '' ? 'NONE' : $result;
 }
 
-function sa_getErrorReporting(){
-  // credit to DarkGool @ php.net
+function sa_getErrorReporting()
+{  // credit to DarkGool @ php.net
   $bit = ini_get('error_reporting'); 
   while ($bit > 0) { 
       for($i = 0, $n = 0; $i <= $bit; $i = 1 * pow(2, $n), $n++) { 
@@ -906,5 +922,22 @@ function sa_getErrorChanged(){
     return true;
   }
 }
+
+add_action('settings-website-extras','sa_settings_extras');
+
+function sa_settings_extras(){
+  // echo 'sa_settings_extras';
+  include('sa_development/settings.php');
+}
+
+
+/**
+  @todo: colors highlighting and html syntax highlighting
+  @todo: append console to end of document attempt to take out of flow for fatal php errors, as they mess up layout, also load asset detection so not loading twice on fatal past header
+  @todo: backtrace line show
+  @todo: backtrace does not show current function shows last include and stops
+  @todo script timeout handling reporting last function running
+  @todo: highlight path paths, filename
+**/
 
 ?>

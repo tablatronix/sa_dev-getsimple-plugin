@@ -153,7 +153,7 @@ function sa_dump_php(){ // Debug dump php enviroment information
 // backtracing
 function sa_debug_backtrace($skip = null,$backtrace=null){
     $traces = isset($backtrace) ? $backtrace : debug_backtrace();
-    # _debugLog($traces);
+    // _debugLog($traces);
     $ret = array();
     foreach($traces as $i => $call){
         if (isset($skip) and $i < $skip) {
@@ -185,7 +185,7 @@ function sa_debug_backtrace($skip = null,$backtrace=null){
             }
         }        
         
-        $ret[] = '<span class="cm-default"><span class="cm-default">#'.str_pad($i - $skip, 3, ' ') . '</span> '
+        $ret[] = '<div><span class="cm-default"><span class="cm-default">#'.str_pad($i - $skip, 3, ' ') . '</span> '
         .'<span class="cm-variable">' . $object.$call['function'] . '</span>'
         .'<span class="cm-bracket">(</span>'
         .'<span class="">' . arr_to_csv_line($call['args']) .'</span>'
@@ -195,10 +195,11 @@ function sa_debug_backtrace($skip = null,$backtrace=null){
         .'<span class="cm-atom" title="'.$call['file'].'">'. sa_get_path_rel($call['file']) .'</span>'
         .':'
         .'<span class="cm-string">'. $call['line'] .'</span>'
-        .'<span class="cm-bracket">]</span>' . '</span>';
+        .'<span class="cm-bracket">]</span>' . '</span><span class="divider cm-comment"></span></div>';
     }
 
-    return implode("\n",$ret);
+    // return implode("\n",$ret);
+    return implode("",$ret);
 }
 
 function sa_get_bt_arg(&$arg) { // retreives backtrace arguments
@@ -369,6 +370,8 @@ function sa_debugtest(){
   _debugLog($testary);
   _debugLog($tstring);
   _debugLog($tint);
+  
+
   _debugLog($tint,$tfloat,$tdbl,$tstring,$tnull,$tarray);
   _debugLog($tstring);
   _debugLog('A string of text');
@@ -403,6 +406,10 @@ _debugLog(nl2br("
 <span class=cm-link>link</span>
 "));  
 
+sa_setErrorReporting(2);
+_debugLog('error reporting changing');
+  
+sa_setErrorReporting(5);
 _debugLog('test');
 _debugLog('test',myfunc('test','test'),$tstring);
 _debugLog(my_func('test','test'));  
@@ -410,19 +417,21 @@ _debugLog(my_func('test','test'));
 debugLog('string');
 debugLog($tstring);
 debugLog($testary);
-debugLog(print_r($testary,true));
+debugLog(print_r($testary,true)); // print_r array in debuglog todo: has string and quotes wrapping it
 
 _debugLog('test title array',$testary);
 _debugLog('test title string','a string');
 _debugLog('test title variable',$tstring);
 
-_debugLog('test inline array',array());
+_debugLog('test inline array',array('test','test')); // title and inline array
 
-_debugLog($testary);
+_debugLog(null,$testary,$tstring); // arg1 is null or empty string
+
+_debugLog($testary,$tstring); // A really long line breaks the titlebar bmarks .....................
 
 $html = '<strong style="color:magenta">Strong</strong><ul><li>List</li></ul>';
-_debugLog($html);
-_debugLog(array($html));
+_debugLog($html); // html string
+_debugLog(array($html)); // html in array
 
 trigger_error('This is a warning', E_USER_WARNING);
 trigger_error('This is a Notice', E_USER_NOTICE);

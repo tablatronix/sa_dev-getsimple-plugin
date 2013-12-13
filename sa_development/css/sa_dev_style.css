@@ -5,9 +5,9 @@
 	border:none;
 	bottom:auto;
 	clear:none;
-	/* cursor:default;*/
+	/* cursor:default; */
 	/* didn't really know what the default for display should be*/
-	/*display:inline;*/
+	/* display:inline; */
 	float:none;
 	font-family:Arial, Helvetica, sans-serif;
 	font-size:inherit; 
@@ -33,8 +33,18 @@
 	white-space:normal;
 	width:auto;
 	z-index:auto;
-  /*color:black;*/
+  /* color:black; */
   text-shadow:none;
+}
+
+@keyframes barberpole {
+  from { background-position: 0 -5px; }
+  to   { background-position: 30px -5px; }
+}
+
+@-webkit-keyframes barberpole {
+  from { background-position-x: 0; }
+  to   { background-position-x: 30px; }
 }
 
 	.sa_dev_error {
@@ -42,8 +52,26 @@
 	}
 	
 	.sa_dev_error #sa_gsdebug-wrapper{
-		border: 1px solid #871414;
-	}
+		border-top: 2px solid #871414;
+    padding-top:15px;
+    background-size: 30px 30px;
+    background-image: linear-gradient(
+      45deg, 
+      rgba(255,0,0, .6)  25%, 
+      transparent       25%, 
+      transparent       50%, 
+      rgba(255,0,0, .6)  50%, 
+      rgba(255,0,0, .6)  75%, 
+      transparent       75%, 
+      transparent
+    );  
+
+    background-repeat: repeat-x; 
+    background-position: 0 -18px ;
+
+    animation: barberpole 0.5s linear infinite;    
+    -webkit-animation: barberpole 0.5s linear infinite;    
+  }
 
   #sa_gsdebug-wrapper{
     width:100%;
@@ -53,9 +81,11 @@
     padding:3px 0 5px 0;
   }
   
-  .sa_gsdebug-wrap{
+    #sa_gsdebug-wrapper .sa_gsdebug-wrap{
     margin:10px;
     margin-bottom:5px;
+    background:none;
+    background-color:#DDD;    
   }
 
   #sa_gsdebug-wrapper #sa_debug_title {
@@ -85,7 +115,7 @@
   #sa_gsdebug{
     font-family: Consolas, Monaco, Menlo, 'Ubuntu Mono', 'Droid Sans Mono', monospace; 
     width:100%;
-    border:1px solid #FF9933;
+    /*border:1px solid #FF9933;*/
     background:white;
     height:500px;
     overflow:auto;
@@ -96,6 +126,10 @@
   #sa_gsdebug b{
     font-weight:bold;
   }  
+
+  #sa_debug b {
+    color:inherit;
+  }
 
   #sa_gsdebug i{
     font-style:italic;
@@ -221,7 +255,7 @@
     border-style: solid;
     border-width: 1px 0 0;
     clear: both;
-    margin: 1px -8px 0 -8px;
+    /*margin: 1px -8px 0 -8px;*/
     height: 0;    
     opacity:.2;
     display:block;
@@ -305,7 +339,8 @@
 }
 
 .sa_collapse {
-  padding-left:6px;
+  /*padding-left:6px;*/
+  padding:2px 6px;
   border-left: 1px dashed  rgba(133, 133, 133, 0.2) !important;  
   border-bottom: 1px dashed  rgba(133, 133, 133, 0.2) !important;  
   border-right: 1px dashed  rgba(133, 133, 133, 0.2) !important;  
@@ -460,4 +495,266 @@
 
 #gsdebug {
   display:none !important;
+} 
+
+.sa_dev.section {
+  padding-top:20px !important;
+  padding-bottom:10px ;
+  
+  margin-top: 20px;
+  /*border-top:1px solid #F8F8F8;*/
+  /*border-bottom:1px solid #F8F8F8;*/
+  margin-bottom: -20px;
+}
+
+#sa_gsdebug::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+
+    background-color: rgba(100,100,100,.2);
+}
+
+/* scrollbars */
+#sa_gsdebug.smark::-webkit-scrollbar {
+
+    background-image: linear-gradient(
+      transparent 0%, 
+      transparent 50%, 
+      
+      transparent 50%, 
+      #ae81ff 50%,
+      transparent 50.5%,
+
+      transparent 56%,
+      #f92672 56%,
+      transparent 56.5%,
+
+      transparent 80%,
+      #e6db74 80%,
+      transparent 80.25%,
+
+      transparent 82%,
+      #a6e22e 82%,
+      transparent 82.25%,
+
+      transparent 84%,
+      #9effff 84%,
+      transparent 84.5%,
+
+      transparent 100%
+    );
+
+    background-image: linear-gradient(
+      transparent 0px, 
+      transparent 50px, 
+      
+      transparent 50px, 
+      #ae81ff 50px,
+      transparent 52px,
+
+      transparent 100px,
+      #f92672 100px,
+      transparent 102px,
+
+      transparent 200px,
+      #e6db74 200px,
+      transparent 202px,
+
+      transparent 230px,
+      #a6e22e  230px,
+      transparent 232px,
+
+      transparent 300px,
+      #9effff 300px,
+      transparent 302px,
+
+      transparent 500px
+    );
+
+    -webkit-background-size: 100%;
+}
+
+#sa_gsdebug {
+  border-radius: 0 3px 3px 0;
+}
+
+#sa_gsdebug::-webkit-scrollbar-track{
+    /*background-color: rgba(100,100,100,.2);*/
+    -webkit-border-radius: 0;
+    border-radius: 3px;
+    /*box-shadow: inset 0px 0 5px #000000;*/
+    /*box-shadow: inset 2px 0px 3px 0px rgba(0, 0, 0, 0.39);    */
+}
+
+#sa_gsdebug::-webkit-scrollbar-track-piece {
+    /*background-color: rgba(100,100,100,.2);*/
+    -webkit-border-radius: 0;
+    border-radius: 3px;
+}
+
+#sa_gsdebug::-webkit-scrollbar-track-piece:vertical {
+  /*margin-bottom:10px;*/
+  /*margin-top: 2px;*/
+}
+
+#sa_gsdebug::-webkit-scrollbar-track-piece:horizontal {
+  /*margin-right:10px;*/
+}
+
+#sa_gsdebug::-webkit-scrollbar-thumb:vertical {
+    height: 25px;
+    background-color: rgba(100,100,100,.5);
+    -webkit-border-radius: 3px;
+    border:1px solid #666;  
+}
+#sa_gsdebug::-webkit-scrollbar-thumb:vertical:hover {
+    background-color: rgba(100,100,100,.9);
+}
+#sa_gsdebug::-webkit-scrollbar-thumb:horizontal {
+    width: 25px;
+    background-color: rgba(100,100,100,.5);
+    -webkit-border-radius: 3px;
+    border:1px solid #666;
+}
+#sa_gsdebug::-webkit-scrollbar-thumb:horizontal:hover {
+    background-color: #666;
+}
+#sa_gsdebug::-webkit-scrollbar-corner {
+    background-color: transparent;
+}
+
+
+
+/**
+ * EXPERIMENTAL STUFF
+ */
+/* trackbar background */
+/* could also use a gradient as background with stops */
+
+#sa_gsdebug.translateZ {
+  -webkit-transform: translateZ(0);
+}
+
+#float{
+  background-color: rgba(100,100,100,.2);
+
+  height: 100%;
+  width: 10px;
+  background: ;
+  position: fixed;
+  top: 0;
+  right: -10px;
+
+  pointer-events:none;
+}
+
+#float .marker {
+  background-color: #FF00FF;
+  height:1px;
+  margin-top:80px;
+}
+
+#float .marker-red {
+  background-color: #00FFFF;
+}
+
+/* hacked forms */
+
+/* background containers */
+div.section_alt{
+  /*background-color: rgba( 128, 128, 128, 0.07);*/
+  border: 1px solid rgba( 128, 128, 128, 0.1);
+  
+  /*margin-top:45px;*/
+  margin-top:20px;
+  padding-top:10px !important;
+
+  margin-left: -15px;
+  margin-right: -15px;
+  padding: 17px;
+
+  border-radius: 3px;
+}
+
+div.section_alt a{
+  /*margin-bottom: 8px;*/
+}
+
+div.section_alt h3{
+  /*margin-top:-70px;*/
+  margin-bottom: 10px !important;
+}
+
+div.section_alt .leftsec, div.section_alt .rightsec, div.section_alt .widesec {
+  background-color: rgba(128, 128, 128, 0.05);
+  border-radius: 3px;
+  padding: 8px 0 0 12px;
+  box-sizing: border-box;
+}
+
+div.section_alt .leftsec {
+  margin-left: -8px;
+  margin-right: 8px;
+}
+
+div.section_alt .rightsec {
+  margin-left: 8px;
+  margin-right: -8px;
+}
+
+div.section_alt .widesec {
+  margin-left: -8px;
+  margin-right: 8px;
+}
+
+/* divider lines */
+.rightsec.divider {
+  border-left: 1px solid rgba(168, 168, 168, 0.29);
+  margin-left: -4px;
+  padding-left: 11px;
+  margin-right: -8px;
+}
+
+.leftsec.divider {
+  border-right: 1px solid rgba(168, 168, 168, 0.29);  
+  margin-left: -7px;
+  margin-right: 7px;
+  padding-left: 7px;
+  box-sizing: border-box;
+
+}
+
+
+#sa_gsdebug.bmeter .titlebar .bmark {
+    background-color: rgba(100,100,100,.2);
+
+    background-image: linear-gradient(
+      90deg,
+      transparent 0%, 
+      transparent 5%, 
+      
+      transparent 5%, 
+      #ae81ff 5%,
+      transparent 5.5%,
+
+      transparent 56%,
+      #f92672 56%,
+      transparent 56.5%,
+
+      transparent 80%,
+      #e6db74 80%,
+      transparent 80.25%,
+
+      transparent 82%,
+      #a6e22e 82%,
+      transparent 82.25%,
+
+      transparent 84%,
+      #9effff 84%,
+      transparent 84.5%,
+
+      transparent 100%
+    );
+
+    -webkit-background-size: 100%;
 } 
