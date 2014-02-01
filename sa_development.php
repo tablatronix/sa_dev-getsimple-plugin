@@ -17,6 +17,7 @@ define('SA_DEBUG',false); // sa dev plugin debug
 $PLUGIN_ID  = "sa_development";
 $PLUGINPATH = $SITEURL.'plugins/sa_development/';
 $sa_url     = 'http://tablatronix.com/getsimple-cms/sa-dev-plugin/';
+// $SA_CM_THEME = "cm-s-monokai";
 
 # get correct id for plugin
 $thisfile    = basename(__FILE__, ".php");// Plugin File
@@ -319,7 +320,7 @@ function sa_debugConsole(){  // Display the log
     }
     
     echo "\n";
-    echo'<div id="sa_gsdebug" class="cm-s-monokai">';
+    echo'<div id="sa_gsdebug" class="'.$SA_CM_THEME.'">';
     echo'<div id="float"></div>';
     echo '<span id="collapser" class="cm-comment"><a class="collapseall">collapse</a><span> | </span><a class="expandall">expand</a></span>';
     echo '<pre>';
@@ -587,7 +588,7 @@ function vdump($args){
     
     if($numargs > 1 and gettype($arg1)=='string' and !empty($arg1) and ( gettype($args[1])!='string' or strpos($argnames[1],'$') === 0)){
       // if a string and more arguments, we treat first argumentstring as title, and shift it off the arg array
-      $str.=('<span class="cm-default titlebar special" title="(' . sa_get_path_rel($file) . ' ' . $line . ')">'.htmlspecialchars($arg1).$bmark_str.'</span>');
+      $str.=('<span class="titlebar special" title="(' . sa_get_path_rel($file) . ' ' . $line . ')">'.htmlspecialchars($arg1).$bmark_str.'</span>');
       array_shift($args);
       array_shift($argnames);
       $numargs--;
@@ -595,7 +596,7 @@ function vdump($args){
     }    
     elseif($numargs > 1 || ( $numargs == 1 and (gettype($arg1)=='array' or gettype($arg1)=='object')) ){
       // if multiple arguments or an array, we add a header for the rows
-      $str.=('<span class="cm-default titlebar array object multi"' . sa_get_titlebar($file,$line, sa_get_codeline($line,$codeline) ) );
+      $str.=('<span class="titlebar array object multi"' . sa_get_titlebar($file,$line, sa_get_codeline($line,$codeline) ) );
       $str.= $collapsestr;      
     }
     elseif($numargs == 1 and gettype($arg1)=='string' and strpos($argnames[0],'$') === false){
@@ -606,7 +607,7 @@ function vdump($args){
     }    
     elseif($numargs == 0){
       // empty do backtrace
-      $str.=('<span class="cm-default titlebar"'.sa_get_titlebar($file,$line, sa_get_codeline($line,$codeline) ) );
+      $str.=('<span class="titlebar"'.sa_get_titlebar($file,$line, sa_get_codeline($line,$codeline) ) );
       $str.= $collapsestr;
       $str.= '<b>Backtrace</b><span class="cm-tag"> &rarr;</span><br />';
       $str.= nl2br(sa_debug_backtrace(2));    
