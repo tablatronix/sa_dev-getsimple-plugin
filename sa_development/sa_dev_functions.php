@@ -298,8 +298,8 @@ function sa_dumpFilters($filterName = NULL,$exclude = false){
     if(isset($filterName) and $filter['filter'] != $filterName and $exclude==false) continue;  
     if(isset($filterName) and $filter['filter'] == $filterName and $exclude==true) continue;  
     
-        $return = '<span class="sa-default"><span><b>'.$filter['filter'] .'</b> &rarr; </span>'
-        .'<span class="cm-keyword">' . $filter['function'] . '</span>';    
+        $return = '<span class="sa-default"><span><b>'.$filter['filter'] .'</b><span class="cm-tag"> &rarr; </span></span>'
+        .'<span class="cm-variable">' . $filter['function'] . '</span>';    
         $hookdump.=$return.'<br/>';
   }
   return $hookdump.'</span>';
