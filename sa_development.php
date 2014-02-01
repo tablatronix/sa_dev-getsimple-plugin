@@ -21,7 +21,7 @@ $sa_url     = 'http://tablatronix.com/getsimple-cms/sa-dev-plugin/';
 # get correct id for plugin
 $thisfile    = basename(__FILE__, ".php");// Plugin File
 $sa_pname    = 'SA Development';          //Plugin name
-$sa_pversion = '0.6';                     //Plugin version
+$sa_pversion = '0.7';                     //Plugin version
 $sa_pauthor  = 'Shawn Alverson';          //Plugin author
 $sa_purl     =  $sa_url;                  //author website
 $sa_pdesc    =  'SA Development Suite';   //Plugin description
@@ -487,7 +487,7 @@ function sa_bmark_print($msg){
 
 function sa_bmark_debug($msg = ""){
     GLOBAL $stopwatch;
-    debugLog('<span class="titlebar sad_bmark"><span class="sad_key">bmark</span> : ' . number_format(round($stopwatch->elapsed(),5),5) . "<b> &#711;</b>" . number_format(round($stopwatch->clock(),5),5) . " " . $msg . '</span>');
+    debugLog('<span class="titlebar cm-keyword"><span class="cm-default">bmark</span> : ' . number_format(round($stopwatch->elapsed(),5),5) . "<b> &#711;</b>" . number_format(round($stopwatch->clock(),5),5) . " " . $msg . '</span>');
 }
 
 function sa_bmark_reset(){
@@ -512,7 +512,7 @@ function _debugLog(){
   if(sa_getErrorChanged()){
     debugTitle('PHP Error Level changed: <small>(' . error_reporting() . ') ' .error_level_tostring(error_reporting(),'|') . '</small>','notice');  
   } 
-  debugLog(vdump(func_get_args()));
+  if(function_exists('debugLog'))  debugLog(vdump(func_get_args()));
 }
 
 function _debugReturn(){
