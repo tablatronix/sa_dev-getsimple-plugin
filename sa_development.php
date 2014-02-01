@@ -246,7 +246,7 @@ function sa_logRequests(){
 }
 
 function sa_debugConsole(){  // Display the log
-  global $GS_debug,$stopwatch,$sa_console_sent,$sa_phperr_init;            
+  global $GS_debug,$stopwatch,$sa_console_sent,$sa_phperr_init,$SA_CM_THEME;
   
   if(!$sa_console_sent){
     sa_logRequests();
