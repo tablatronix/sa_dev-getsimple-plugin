@@ -17,6 +17,7 @@ define('SA_DEBUG',false); // sa dev plugin debug
 $PLUGIN_ID  = "sa_development";
 $PLUGINPATH = $SITEURL.'plugins/sa_development/';
 $sa_url     = 'http://tablatronix.com/getsimple-cms/sa-dev-plugin/';
+$SA_CM_THEME = "cm-s-default";
 // $SA_CM_THEME = "cm-s-monokai";
 
 # get correct id for plugin
