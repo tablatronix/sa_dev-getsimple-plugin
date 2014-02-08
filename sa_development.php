@@ -629,7 +629,9 @@ function vdump($args){
         }
 
         ob_start();
-        var_dump($arg);
+        // prevent xdebugs var_dump overload from ruining output
+        if(ini_get('xdebug.overload_var_dump') == 1) print_r($arg);
+        else var_dump($arg);
         $dump = ob_get_clean();
         $str .= htmlspecialchars($dump,ENT_NOQUOTES);
         $argn++;
