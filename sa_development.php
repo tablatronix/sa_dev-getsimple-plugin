@@ -8,6 +8,7 @@
 * @Author URI: http://tablatronix.com/getsimple-cms/sa-dev-plugin/
 */
 
+
 // global to force console on even when not logged in
 $SA_DEV_ON = isset($SA_DEV_ON) ? $SA_DEV_ON : false;
 
@@ -329,6 +330,7 @@ function sa_debugConsole(){  // Display the log
     if(!$sa_console_sent){    
       echo 'GS Debug mode is: ' . ((defined('GSDEBUG') and GSDEBUG == 1) ? '<span class="cm-tag"><b>ON</b></span>' : '<span class="cm-error"><b>OFF</b></span>') . '<br />';
       echo 'PHP Error Level: <small><span class="cm-comment">(' . $sa_phperr_init . ') ' .error_level_tostring($sa_phperr_init,'|') . "</span></small><span class='divider cm-comment'></span>";
+      if(ini_get('xdebug.default_enable') == 1 && ini_get('xdebug.overload_var_dump') == 1) echo  '<span class="cm-tag">XDebug is overloading var_dump, output will not look as intented!</span>';
     }else{
       echo 'Post footer alerts<br />';
     }
@@ -521,6 +523,12 @@ function _debugReturn(){
   return vdump(func_get_args());
 }
 
+// _debugLog('xdebug');
+// $xdebugon = ini_get('xdebug.default_enable') == 1 ? 'on' : 'off';
+
+// _debugLog('xdebug.default_enable', $xdebugon );
+// _debugLog('xdebug.overload_var_dump',ini_get('xdebug.overload_var_dump')  == 1 ? 'on' : 'off' );
+
 function vdump($args){
     
     GLOBAL $debugLogFunc;
@@ -628,12 +636,16 @@ function vdump($args){
           if(gettype($arg) == 'array' and count($arg)>0) echo "\n"; // push array contents to new line
         }
 
+        // disable xdebug
+        // ini_set('xdebug.default_enable',0);
+        // ini_set('xdebug.overload_var_dump',0);
+
         ob_start();
         // prevent xdebugs var_dump overload from ruining output
-        if(ini_get('xdebug.overload_var_dump') == 1) print_r($arg);
-        else var_dump($arg);
+        var_dump($arg);
         $dump = ob_get_clean();
-        $str .= htmlspecialchars($dump,ENT_NOQUOTES);
+        if(ini_get('xdebug.default_enable') == 1 && ini_get('xdebug.overload_var_dump') == 1) $str .= $dump;
+        else $str .= htmlspecialchars($dump,ENT_NOQUOTES);
         $argn++;
       }  
 
@@ -944,6 +956,7 @@ function sa_settings_extras(){
   @fixed: @float(INF
   @fixed: @todo: backtrace does not show current function shows last include and stops
   
+  @todo xdebug takes over var_dump, fucks it all up
   @todo: colors highlighting and html syntax highlighting
   @todo: append console to end of document attempt to take out of flow for fatal php errors, as they mess up layout, also load asset detection so not loading twice on fatal past header
   @todo: backtrace line show
