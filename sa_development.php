@@ -24,7 +24,7 @@ $SA_CM_THEME = "cm-s-default";
 # get correct id for plugin
 $thisfile    = basename(__FILE__, ".php");// Plugin File
 $sa_pname    = 'SA Development';          //Plugin name
-$sa_pversion = '0.7';                     //Plugin version
+$sa_pversion = '0.8';                     //Plugin version
 $sa_pauthor  = 'Shawn Alverson';          //Plugin author
 $sa_purl     =  $sa_url;                  //author website
 $sa_pdesc    =  'SA Development Suite';   //Plugin description
