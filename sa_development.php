@@ -47,7 +47,7 @@ if(SA_DEBUG==true){
 }
 
 // enable only when logged in
-if(sa_user_is_admin() || $SA_DEV_ON || (get_filename_id() != 'install' && get_filename_id() != 'setup' && get_filename_id() != 'update')){
+if((sa_user_is_admin() || $SA_DEV_ON) && (get_filename_id() != 'install' && get_filename_id() != 'setup' && get_filename_id() != 'update')){
   add_action('index-posttemplate', 'sa_debugConsole');
   if(SA_DEBUG==true) add_action('footer', 'sa_debugtest'); // debug logging
   add_action('footer', 'sa_debugConsole');
