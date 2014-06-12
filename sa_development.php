@@ -277,6 +277,7 @@ function sa_debugConsole(){  // Display the log
   # if(defined('GSDEBUG') and !pageIsFrontend()) return;
     
     echo '<script type="text/javascript">'."\n";    
+    echo '(function ($) {';
     echo 'jQuery(document).ready(function() {'."\n";    
     echo '$("h2:contains(\''. i18n_r('DEBUG_CONSOLE') .'\'):not(\'#sa_debug_header\')").remove();';
     
@@ -316,6 +317,7 @@ function sa_debugConsole(){  // Display the log
     ";
 
     echo '});';    
+    echo '}(jQuery));';
     echo '</script>';
     }
     echo '<div id="sa_gsdebug-wrapper">
