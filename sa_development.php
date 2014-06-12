@@ -19,12 +19,12 @@ $PLUGIN_ID  = "sa_development";
 $PLUGINPATH = $SITEURL.'plugins/sa_development/';
 $sa_url     = 'http://tablatronix.com/getsimple-cms/sa-dev-plugin/';
 $SA_CM_THEME = "cm-s-default";
-// $SA_CM_THEME = "cm-s-monokai";
+$SA_CM_THEME = "cm-s-monokai";
 
 # get correct id for plugin
 $thisfile    = basename(__FILE__, ".php");// Plugin File
 $sa_pname    = 'SA Development';          //Plugin name
-$sa_pversion = '0.8';                     //Plugin version
+$sa_pversion = '0.9';                     //Plugin version
 $sa_pauthor  = 'Shawn Alverson';          //Plugin author
 $sa_purl     =  $sa_url;                  //author website
 $sa_pdesc    =  'SA Development Suite';   //Plugin description
@@ -82,6 +82,9 @@ $sa_console_sent = false;
 
 $sa_phperr_init = error_reporting();
 $sa_phperr = error_reporting();
+
+$open_basedir_val = ini_get('open_basedir');
+$overridexdebug = true;
 
 if(sa_showingFilters()) add_action('common','create_pagesxml',array(true));
 
@@ -247,7 +250,7 @@ function sa_logRequests(){
 }
 
 function sa_debugConsole(){  // Display the log
-  global $GS_debug,$stopwatch,$sa_console_sent,$sa_phperr_init,$SA_CM_THEME;
+  global $GS_debug,$stopwatch,$sa_console_sent,$sa_phperr_init,$SA_CM_THEME,$overridexdebug;
   
   if(!$sa_console_sent){
     sa_logRequests();
@@ -330,7 +333,16 @@ function sa_debugConsole(){  // Display the log
     if(!$sa_console_sent){    
       echo 'GS Debug mode is: ' . ((defined('GSDEBUG') and GSDEBUG == 1) ? '<span class="cm-tag"><b>ON</b></span>' : '<span class="cm-error"><b>OFF</b></span>') . '<br />';
       echo 'PHP Error Level: <small><span class="cm-comment">(' . $sa_phperr_init . ') ' .error_level_tostring($sa_phperr_init,'|') . "</span></small><span class='divider cm-comment'></span>";
-      if(ini_get('xdebug.default_enable') == 1 && ini_get('xdebug.overload_var_dump') == 1) echo  '<span class="cm-tag">XDebug is overloading var_dump, output will not look as intented!</span>';
+      
+      // XDEBUG WARNINGS
+      $xdebugstate = xdebug_overload_var_dump();
+      if($xdebugstate){
+        echo  '<div><span class="cm-tag">XDebug is overloading var_dump</span>';
+        if($xdebugstate && $overridexdebug) xdebug_overload_var_dump(false);
+        if(!xdebug_overload_var_dump()) echo  '<span class="cm-tag">, DISABLED</span></div>';
+        else  echo  '<span class="cm-tag">. Unable to disable, output may not appear properly</span></div>';
+        if($overridexdebug) xdebug_overload_var_dump($xdebugstate); // restore xdebug
+      }
     }else{
       echo 'Post footer alerts<br />';
     }
@@ -364,8 +376,9 @@ function sa_debugConsole(){  // Display the log
           <span class="sa_icon_wrap"><span class="sa_icon sa_icon_files"></span>Includes: '. count(get_required_files()) .'</span>
           <span class="sa_icon_wrap"><span class="sa_icon sa_icon_mempeak"></span>Peak Memory: '. byteSizeConvert(memory_get_peak_usage()) .'</span>
           <span class="sa_icon_wrap"><span class="sa_icon sa_icon_memlimit"></span>Mem Avail: '. ini_get('memory_limit') .'</span>
-          <span class="sa_icon_wrap"><span class="sa_icon sa_icon_diskfree"></span>Disk Avail: '. byteSizeConvert(disk_free_space("/")) .' / ' . byteSizeConvert(disk_total_space("/")) .'</span>
-        </div>';
+        ';
+        if(!empty($open_basedir_val)) echo '<span class="sa_icon_wrap"><span class="sa_icon sa_icon_diskfree"></span>Disk Avail: '. byteSizeConvert(disk_free_space("/")) .' / ' . byteSizeConvert(disk_total_space("/")) .'</span>';
+        echo '</div>';
     }
     echo '</div></div>';
 
@@ -484,7 +497,7 @@ class StopWatch {
     } 
 } 
 
-function sa_bmark_print($msg){
+function sa_bmark_print($msg = ""){
     GLOBAL $stopwatch;
     echo("<span id=\"pagetime\">bmark: " . $msg . ": " . round($stopwatch->clock(),5) . " / " . round($stopwatch->elapsed(),5) ." seconds</span>"); 
 }
@@ -495,6 +508,7 @@ function sa_bmark_debug($msg = ""){
 }
 
 function sa_bmark_reset(){
+  GLOBAL $stopwatch;  
   $stopwatch->reset();
 }
 
@@ -523,15 +537,23 @@ function _debugReturn(){
   return vdump(func_get_args());
 }
 
-// _debugLog('xdebug');
-// $xdebugon = ini_get('xdebug.default_enable') == 1 ? 'on' : 'off';
 
-// _debugLog('xdebug.default_enable', $xdebugon );
-// _debugLog('xdebug.overload_var_dump',ini_get('xdebug.overload_var_dump')  == 1 ? 'on' : 'off' );
+xdebug_overload_var_dump();
+
+function xdebug_overload_var_dump($enable = null){
+  if(isset($enable)){
+    if($enable === false) ini_set('xdebug.default_enable',0);
+    else if($enable === true) ini_set('xdebug.default_enable',1);
+  }
+
+  // ini_set('xdebug.overload_var_dump',0);
+  // ini_set('html_errors', 0);
+  return ini_get('xdebug.default_enable') == 1 && ini_get('xdebug.overload_var_dump') == 1;
+}
 
 function vdump($args){
     
-    GLOBAL $debugLogFunc;
+    GLOBAL $debugLogFunc,$overridexdebug;
     
     $debugstr = ''; // for local debugging because we can create infinite loops by using debuglog inside debuglogs
     
@@ -636,16 +658,22 @@ function vdump($args){
           if(gettype($arg) == 'array' and count($arg)>0) echo "\n"; // push array contents to new line
         }
 
-        // disable xdebug
-        // ini_set('xdebug.default_enable',0);
-        // ini_set('xdebug.overload_var_dump',0);
-
         ob_start();
-        // prevent xdebugs var_dump overload from ruining output
+        
+        // prevent xdebugs var_dump overload from ruining output, tmp disable and restore
+        $xdebugstate = xdebug_overload_var_dump();
+        if($xdebugstate && $overridexdebug) xdebug_overload_var_dump(false);
+        // if($overridexdebug) xdebug_overload_var_dump($xdebugstate); // restore xdebug
+
         var_dump($arg);
+
         $dump = ob_get_clean();
-        if(ini_get('xdebug.default_enable') == 1 && ini_get('xdebug.overload_var_dump') == 1) $str .= $dump;
+        
+        if(xdebug_overload_var_dump()) $str .= $dump; // safety in case xdebug could not be disabled
         else $str .= htmlspecialchars($dump,ENT_NOQUOTES);
+        
+        if($overridexdebug) xdebug_overload_var_dump($xdebugstate); // restore xdebug
+        
         $argn++;
       }  
 
