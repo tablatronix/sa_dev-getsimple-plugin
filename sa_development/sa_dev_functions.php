@@ -144,11 +144,12 @@ function sa_phpInfoLite() // Returns loaded PHP extensions and versions
 
 function sa_dump_php(){ // Debug dump php enviroment information
   # _debugLog('Local Variables',get_defined_vars()); // LOCAL VARS
-  _debugLog('PHP User Constants',sa_array_index(get_defined_constants(true),'user')); //PHP USER CONSTANTS
+  // _debugLog('PHP GLOBALS',$GLOBALS); //PHP SUPER GLOBALS
   _debugLog('PHP Includes',get_required_files()); // INCLUDES
+  _debugLog('PHP User Constants',sa_array_index(get_defined_constants(true),'user')); //PHP USER CONSTANTS
   _debugLog('PHP Extensions',sa_phpInfoLite()); // PHP LOADED EXTENSIONS
   _debugLog('PHP All Constants',get_defined_constants(true)); // PHP ALL CONSTANTS
-}  
+}
 
 // backtracing
 function sa_debug_backtrace($skip = null,$backtrace=null){
@@ -340,18 +341,24 @@ function sa_debugtest(){
   $book->publisher    = "Arthur A. Levine Books";
   $book->amazon_link  = "http://www.amazon.com/dp/0439136369/";
     
-  $tstring 	= "a string";
+  $tstring  = "a string";
+  $tmstring 	= "a multiline string\nanother line of multiline string And yet another";
   $tint 		= 1;
   $tfloat 	= 1.2;
+  $tfloatNAN = NAN;
+  $tfloatINF = INF;
   $tdbl 		= 7E-10;
   $tnull 		= null;
   $tarray 	= array();
   
   $testary = array(
   'int' 				=> $tint,
-  'float' 			=> $tfloat,
+  'float'       => $tfloat,
+  'floatNAN'      => $tfloatNAN,
+  'floatINF' 			=> $tfloatINF,
   'double' 			=> $tdbl,
-  'string' 			=> $tstring,
+  'string'      => $tstring,
+  'multistring' => $tmstring,
   'null' 				=> $tnull,
   'empty array' => $tarray,
   'array' 			=> array(  
@@ -366,7 +373,17 @@ function sa_debugtest(){
   'object' 			=> new stdClass,
   );  
   
-	var_dump($testary);
+
+  echo "<h2> var_dump raw</h2>";
+  echo "<pre>";
+  xdebug_overload_var_dump(false);
+  var_dump($testary);
+  echo "</pre>";
+  
+  echo "<br><h2> print_r raw</h2>";
+  echo "<pre>";
+  echo print_r($testary,true);
+  echo "</pre>";
   // var_dump($tnull);
   
   $testary2 = array(

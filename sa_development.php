@@ -12,7 +12,7 @@
 // global to force console on even when not logged in
 $SA_DEV_ON = isset($SA_DEV_ON) ? $SA_DEV_ON : false;
 
-define('SA_DEBUG',false); // sa dev plugin debug
+define('SA_DEBUG',false); // sa dev plugin debug for debugging itself
 # define('GS_DEV',false); // global development constant
 
 $PLUGIN_ID  = "sa_development";
@@ -90,7 +90,7 @@ if(sa_showingFilters()) add_action('common','create_pagesxml',array(true));
 
 // INIT
 sa_initHookDebug();
-sa_initFilterDebug();
+sa_initFilterDebug(); // @todo this needs work
 
 // FUNCTIONS
 
@@ -147,6 +147,10 @@ function sa_initHookDebug(){
   }
 }
 
+/*
+  For debugging actual filters to ensure filter is functioning properly
+  @uses $FILTERS from hooks.php
+ */
 function sa_initFilterDebug(){
   // add hooks for showing and bmarking them
   GLOBAL $SA_DEV_GLOBALS, $FILTERS, $filters; 
@@ -154,6 +158,7 @@ function sa_initFilterDebug(){
   if(sa_showingFilters()){
     debugTitle('Debugging Filters');
     _debugLog(__FUNCTION__);
+    _debugLog($FILTERS);
     foreach($FILTERS as $key=>$value){
      // _debugLog(__FUNCTION__,$key);
      add_filter($key, 'sa_echo_filter',array($key));
@@ -399,8 +404,11 @@ function sa_echo_filter($unfiltered,$args = array()){
   // echoes filters onto pages
   GLOBAL $FILTER,$SITEURL;
 
+  // gs does not pass args to filters, so this is empty
+  // would be nice to add this feature to core
+  // find another way to enumerate the current filter I have forgotten atm
+  
   $filterid = $args[0];
-
   // _debugLog(__FUNCTION__, $filterid);
 
   $pagesitem = <<<XML
@@ -701,27 +709,28 @@ function sa_dev_highlighting($str){
     // $str = preg_replace('/&gt; NULL/', '&gt; <span class="cm-def">NULL</span>', $str); // array nulls
     $str = preg_replace('/(\s)NULL/', ' <span class="cm-def">NULL</span>', $str); // string nulls, just 'NULL'
     $str = preg_replace('/}\n(\s+)\[/', "}\n\n".'$1[', $str);
-    $str = preg_replace('/((?:&amp;)?float|(?:&amp;)?int)\((\-?[\d\.\-E]+)\)/',    " <span class='cm-default'>$1</span> <span class='cm-number'>$2</span>", $str); // float(n.n) | int(n)
-    $str = preg_replace('/((?:&amp;)?float)\((\-?NAN+)\)/',    " <span class='cm-default'>$1</span> <span class='cm-def'>$2 <span class='cm-comment'>(Not a Number)</span></span>", $str); // float(NAN)
-    $str = preg_replace('/((?:&amp;)?float)\((\-?INF+)\)/',    " <span class='cm-default'>$1</span> <span class='cm-def'>$2 <span class='cm-comment'>(Infinity)</span></span>", $str); // float(INF)
-    $str = preg_replace('/(?:&amp;)?array\((\d+)\) {\s+}\n/',            "<span class='cm-default'>array&bull;$1</span> <span class='cm-bracket'><b>[]</b></span>", $str);
-    $str = preg_replace('/(?:&amp;)?array\((\d+)\) {\n/',                "<span class='cm-default'>array&bull;$1</span> <span class='cm-bracket'>{</span>\n<span class='codeindent'>", $str);
-      $str = preg_replace('/Array\n\(\n/',                "\n<span class='cm-default'>array</span> <span class='cm-bracket'>(</span>\n<span class='codeindent'>", $str);
-      $str = preg_replace('/Array\n\s+\(\n/',                "<span class='cm-default'>array</span> <span class='cm-bracket'>(</span>\n<span class='codeindent'>", $str);
-      $str = preg_replace('/Object\n\s+\(\n/',                "<span class='cm-default'>object</span> <span class='cm-bracket'>(</span>\n<span class='codeindent'>", $str);
-    $str = preg_replace('/(?:&amp;)?string\((\d+)\) \"(.*)\"/',          "<span class='cm-default'>str&bull;$1</span> <span class='cm-string'>'$2'</span>", $str);
-    $str = preg_replace('/\[\"(.+)\"\] &gt; /',                    "<span style='color:#666'>'<span class='cm-string'>$1</span>'</span> <span class='cm-tag'>&rarr;</span> ", $str);
-      $str = preg_replace('/\[([a-zA-Z\s_]+)\]  &gt; /',                    "<span style='color:#666'>'<span class='cm-string'>$1</span>'</span> <span class='cm-tag'>&rarr;</span> ", $str);
-      $str = preg_replace('/\[(\d+)\]  &gt; /',                    "<span style='color:#666'>[<span class='cm-string'>$1</span>]</span> <span class='cm-tag'>&rarr;</span> ", $str);
-    $str = preg_replace('/\[(\d+)\] &gt; /',                    "<span style='color:#666'>[<span class='cm-string'>$1</span>]</span> <span class='cm-tag'>&rarr;</span> ", $str);
-    $str = preg_replace('/(?:&amp;)?object\((\S+)\)#(\d+) \((\d+)\) {\s+}\n/', "<span class='cm-default'>obj&bull;$2</span> <span class='cm-keyword'>$1[$3]</span> <span class='cm-keyword'>{}</span>", $str);
-    $str = preg_replace('/(?:&amp;)?object\((\S+)\)#(\d+) \((\d+)\) {\n/', "<span class='cm-default'>obj&bull;$2</span> <span class='cm-keyword'>$1[$3]</span> <span class='cm-keyword'>{</span>\n<span class='codeindent'>", $str);
-    $str = str_replace('bool(false)',                          "<span class='cm-default'>bool&bull;</span><span class='cm-number'><b>false</b></span>", $str);
-    $str = str_replace('&amp;bool(false)',                          "<span class='cm-default'>bool&bull;</span><span class='cm-number'><b>false</b></span>", $str);
-    $str = str_replace('bool(true)',                           "<span class='cm-default'>bool&bull;</span><span class='cm-number'><b>true</b></span>", $str);
-    $str = str_replace('&amp;bool(true)',                           "<span class='cm-default'>bool&bull;</span><span class='cm-number'><b>true</b></span>", $str);
-    $str = preg_replace('/}\n/',                "</span>\n<span class='cm-bracket'>}</span>\n", $str);
-      $str = preg_replace('/\)\n/',                "</span>\n<span class='cm-bracket'>)</span>\n", $str);
+    $str = preg_replace('/((?:&amp;)?float|(?:&amp;)?int)\((\-?[\d\.\-E]+)\)/',"<!-- 01 --><span class='cm-default'>$1</span> <span class='cm-number'>$2</span>", $str); // float(n.n) | int(n)
+    $str = preg_replace('/((?:&amp;)?float)\((\-?NAN+)\)/',                    "<!-- 02 --><span class='cm-default'>$1</span> <span class='cm-def'>$2 <span class='cm-comment'>(Not a Number)</span></span>", $str); // float(NAN)
+    $str = preg_replace('/((?:&amp;)?float)\((\-?INF+)\)/',                    "<!-- 03 --><span class='cm-default'>$1</span> <span class='cm-def'>$2 <span class='cm-comment'>(Infinity)</span></span>", $str); // float(INF)
+    $str = preg_replace('/(?:&amp;)?array\((\d+)\) {\s+}\n/',                  "<!-- 04 --><span class='cm-default'>array&bull;$1</span> <span class='cm-bracket'><b>[]</b></span>", $str);
+    $str = preg_replace('/(?:&amp;)?array\((\d+)\) {\n/',                      "<!-- 05 --><span class='cm-default'>array&bull;$1</span> <span class='cm-bracket'>{</span>\n<span class='codeindent'>", $str);
+      $str = preg_replace('/Array\n\(\n/',                                     "<!-- 06 -->\n<span class='cm-default'>array</span> <span class='cm-bracket'>(</span>\n<span class='codeindent'>", $str);
+      $str = preg_replace('/Array\n\s+\(\n/',                                  "<!-- 07 --><span class='cm-default'>array</span> <span class='cm-bracket'>(</span>\n<span class='codeindent'>", $str);
+      $str = preg_replace('/Object\n\s+\(\n/',                                 "<!-- 08 --><span class='cm-default'>object</span> <span class='cm-bracket'>(</span>\n<span class='codeindent'>", $str);
+    $str = preg_replace('/(?:&amp;)?string\((\d+)\) \"([^".]*)\"/s',           "<!-- 09 --><span class='cm-default'>str&bull;$1</span> <span class='cm-string'>'$2'</span>", $str); // &(opt)string(n) "string"
+    $str = preg_replace('/\[\"(.+)\"\] &gt; /',                                "<!-- 10 --><span style='color:#666'>'<span class='cm-string'>$1</span>'</span> <span class='cm-tag'>&rarr;</span> ", $str);
+      $str = preg_replace('/\[([a-zA-Z\s_]+)\]  &gt; /',                       "<!-- 11 --><span style='color:#666'>'<span class='cm-string'>$1</span>'</span> <span class='cm-tag'>&rarr;</span> ", $str);
+      $str = preg_replace('/\[(\d+)\]  &gt; /',                                "<!-- 12 --><span style='color:#666'>[<span class='cm-string'>$1</span>]</span> <span class='cm-tag'>&rarr;</span> ", $str);
+    $str = preg_replace('/\[(\d+)\] &gt; /',                                   "<!-- 13 --><span style='color:#666'>[<span class='cm-string'>$1</span>]</span> <span class='cm-tag'>&rarr;</span> ", $str);
+    $str = preg_replace('/(?:&amp;)?object\((\S+)\)#(\d+) \((\d+)\) {\s+}\n/', "<!-- 14 --><span class='cm-default'>obj&bull;$2</span> <span class='cm-keyword'>$1[$3]</span> <span class='cm-keyword'>{}</span>", $str);
+    $str = preg_replace('/(?:&amp;)?object\((\S+)\)#(\d+) \((\d+)\) {\n/',     "<!-- 15 --><span class='cm-default'>obj&bull;$2</span> <span class='cm-keyword'>$1[$3]</span> <span class='cm-keyword'>{</span>\n<span class='codeindent'>", $str);
+    $str = str_replace('bool(false)',                                          "<!-- 16 --><span class='cm-default'>bool&bull;</span><span class='cm-number'><b>false</b></span>", $str); // bool(false)
+    $str = str_replace('&amp;bool(false)',                                     "<!-- 17 --><span class='cm-default'>bool&bull;</span><span class='cm-number'><b>false</b></span>", $str); // &bool(false)
+    $str = str_replace('bool(true)',                                           "<!-- 18 --><span class='cm-default'>bool&bull;</span><span class='cm-number'><b>true</b></span>", $str);  // bool(true)
+    $str = str_replace('&amp;bool(true)',                                      "<!-- 19 --><span class='cm-default'>bool&bull;</span><span class='cm-number'><b>true</b></span>", $str);  // &bool(true)
+    $str = preg_replace('/}\n/',                                               "<!-- 20 --></span>\n<span class='cm-bracket'>}</span>\n", $str); // closing ) bracket
+      $str = preg_replace('/\)\n/',                                            "<!-- 21 --></span>\n<span class='cm-bracket'>)</span>\n", $str); // closing } bracket
+    
     $str = str_replace("\n\n","\n",$str);
     # if($argn == 1) $str = str_replace("\n","",$str);
     return $str;
@@ -984,12 +993,14 @@ function sa_settings_extras(){
   @fixed: @float(INF
   @fixed: @todo: backtrace does not show current function shows last include and stops
   
-  @todo xdebug takes over var_dump, fucks it all up
-  @todo: colors highlighting and html syntax highlighting
+  @fixed: xdebug takes over var_dump, fucks it all up, disabling durign var_dump, @todo: make a function wrapper fo use anytime.
+  @todo: automatic timestamp detection, detect unixtime strings and show time formatted
+  @todo: auto colors highlighting and html syntax highlighting, rgb, and #hex, edtect html and run html highlight on it.
   @todo: append console to end of document attempt to take out of flow for fatal php errors, as they mess up layout, also load asset detection so not loading twice on fatal past header
   @todo: backtrace line show
-  @todo: script timeout handling reporting last function running
-  @todo: highlight path paths, filename
+  @todo: backtrace filename highlight better than path
+  @todo: highlight path paths, filename as above
+  @todo: php script timeout handling report the last function running
   @todo: javascript handlers, ajax handlers, error handlers, console output of php errors
   @todo: write proper parser to replace the preg replacers 
 **/
