@@ -458,8 +458,12 @@ _debugLog(null,$testary,$tstring); // arg1 is null or empty string
 _debugLog($testary,$tstring); // A really long line breaks the titlebar bmarks .....................
 
 $html = '<strong style="color:magenta">Strong</strong><ul><li>List</li></ul>';
+var_dump($html);
 _debugLog($html); // html string
 _debugLog(array($html)); // html in array
+
+_debugLog('PHP Includes',get_required_files()); // INCLUDES
+// var_dump(get_required_files());
 
 trigger_error('This is a warning', E_USER_WARNING);
 trigger_error('This is a Notice', E_USER_NOTICE);

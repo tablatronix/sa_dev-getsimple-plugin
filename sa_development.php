@@ -366,6 +366,7 @@ function sa_debugConsole(){  // Display the log
         // print_r array output found
         else if(preg_match('/^(Array\n\().*/',$log)){
           echo _debugReturn("print_r output found in debuglog",$log);
+          # @todo remove the string() that wraps it $log → string(692) "array (
           # echo nl2br($log);
         }
         # if(gettype($log) == 'array'){ echo _debugReturn("array found in debugLog()",$log); } // todo: causes arg parsing on function name in quotes
@@ -719,7 +720,8 @@ function sa_dev_highlighting($str){
       $str = preg_replace('/Array\n\(\n/',                                     "<!-- 06 -->\n<span class='cm-default'>array</span> <span class='cm-bracket'>(</span>\n<span class='codeindent'>", $str);
       $str = preg_replace('/Array\n\s+\(\n/',                                  "<!-- 07 --><span class='cm-default'>array</span> <span class='cm-bracket'>(</span>\n<span class='codeindent'>", $str);
       $str = preg_replace('/Object\n\s+\(\n/',                                 "<!-- 08 --><span class='cm-default'>object</span> <span class='cm-bracket'>(</span>\n<span class='codeindent'>", $str);
-    $str = preg_replace('/(?:&amp;)?string\((\d+)\) \"([^".]*)\"/s',           "<!-- 09 --><span class='cm-default'>str&bull;$1</span> <span class='cm-string'>'$2'</span>", $str); // &(opt)string(n) "string"
+    $str = preg_replace('/(?:&amp;)?string\((\d+)\) \"(.*)\"/',                "<!-- 09 --><span class='cm-default'>str&bull;$1</span> <span class='cm-string'>'$2'</span>", $str); // &(opt)string(n) "string with "quotes" "
+    $str = preg_replace('/(?:&amp;)?string\((\d+)\) \"([^"\']*)\"/s',          "<!-- 09 --><span class='cm-default'>str&bull;$1</span> <span class='cm-string'>'$2'</span>", $str); // &(opt)string(n) "string with \n"
     $str = preg_replace('/\[\"(.+)\"\] &gt; /',                                "<!-- 10 --><span style='color:#666'>'<span class='cm-string'>$1</span>'</span> <span class='cm-tag'>&rarr;</span> ", $str);
       $str = preg_replace('/\[([a-zA-Z\s_]+)\]  &gt; /',                       "<!-- 11 --><span style='color:#666'>'<span class='cm-string'>$1</span>'</span> <span class='cm-tag'>&rarr;</span> ", $str);
       $str = preg_replace('/\[(\d+)\]  &gt; /',                                "<!-- 12 --><span style='color:#666'>[<span class='cm-string'>$1</span>]</span> <span class='cm-tag'>&rarr;</span> ", $str);
