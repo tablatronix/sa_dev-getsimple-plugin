@@ -39,6 +39,7 @@ function pageIsFrontend() {
 // 
 
 function sa_get_path_rel($path){
+  $path = str_replace('\\','/',$path);
   return str_replace($_SERVER['DOCUMENT_ROOT'],'',$path);
 }
 
@@ -152,6 +153,12 @@ function sa_dump_php(){ // Debug dump php enviroment information
 }
 
 // backtracing
+/**
+ * [sa_debug_backtrace description]
+ * @param  int $skip      depth to start at
+ * @param  backtrace      $backtrace a backtrace to pass in
+ * @return string         html formatted backtrace
+ */
 function sa_debug_backtrace($skip = null,$backtrace=null){
     $traces = isset($backtrace) ? $backtrace : debug_backtrace();
     // _debugLog($traces);
@@ -159,48 +166,62 @@ function sa_debug_backtrace($skip = null,$backtrace=null){
     foreach($traces as $i => $call){
         if (isset($skip) and $i < $skip) {
             continue;
-        }
-
-        if (!isset ($call['args']))
-        {
-            $call['args'] = array();
-        }				
-				
-        if (!isset ($call['file']))
-        {
-            $call['file'] = '';
-        }
-
-        if (!isset ($call['line']))
-        {
-            $call['line'] = '';
-        }        
+        }  
         
-        $object = '';
         if (isset($call['class'])) {
-            $object = $call['class'].$call['type'];
+            $call['object'] = $call['class'].$call['type'];
             if (is_array($call['args'])) {
                 foreach ($call['args'] as &$arg) {
-                    sa_get_bt_arg($arg);
+                    sa_get_bt_arg($arg); // get function args for display
                 }
             }
         }        
         
-        $ret[] = '<div><span class="cm-default"><span class="cm-default">#'.str_pad($i - $skip, 3, ' ') . '</span> '
-        .'<span class="cm-variable">' . $object.$call['function'] . '</span>'
-        .'<span class="cm-bracket">(</span>'
-        .'<span class="">' . arr_to_csv_line($call['args']) .'</span>'
-        .'<span class="cm-bracket">)</span>'
-        .'<span class="cm-comment"> called at </span>'
-        .'<span class="cm-bracket">[</span>'
-        .'<span class="cm-atom" title="'.$call['file'].'">'. sa_get_path_rel($call['file']) .'</span>'
-        .':'
-        .'<span class="cm-string">'. $call['line'] .'</span>'
-        .'<span class="cm-bracket">]</span>' . '</span><span class="divider cm-comment"></span></div>';
+        $ret[] = sa_backtrace_template($i-$skip,$call);
     }
 
     // return implode("\n",$ret);
     return implode("",$ret);
+}
+
+
+function sa_backtrace_template($index,$call){
+
+  $id       = str_pad($index, 3, ' ');
+  $object   = isset($call['object']) ? $call['object'] : '';
+  $file     = isset($call['file']) ? $call['file'] : __FILE__; // php bug #44428, missing file and line ( this is same file or call_user possibly )
+  $filepath = sa_get_path_rel($file);
+  $linenum  = isset($call['line']) ? $call['line'] : '--';
+  $func     = $call['function'];
+  $args     = arr_to_csv_line($call['args']);
+
+
+  // #0 __FUNCTION__("argument") called at [__FILE__:__LINE__]
+  $str = '<div><span class="cm-default">'
+  .'<span class="cm-default">#'. $id. '</span> '
+  .'<span class="cm-variable">' . $object . $func . '</span>'
+  .'<span class="cm-bracket">(</span><span class="">' . $args .'</span><span class="cm-bracket">)</span>'
+  .'<span class="cm-comment"> called at </span>'
+  .'<span class="cm-bracket">[</span>'
+  .'<span class="cm-atom" title="'. $file .'">'. $filepath .'</span>'
+  .':'
+  .'<span class="cm-string">'. $linenum .'</span>'
+  .'<span class="cm-bracket">]</span>' . '</span>'
+  .'<span class="divider cm-comment"></span>'
+  .'</div>';
+
+  // #0 __FUNCTION__("argument") called at [__FILE__:__LINE__]
+  $str = '<div><span class="cm-default"><span style="display:inline-block;width:5px;">'
+  . ($index == 0 ? '&bull;' : '')
+  .'</span>'
+  .'<span class="cm-default" style="display:inline-block;width:50px;text-align:right">'. $linenum. '</span> '
+  .'<span class="cm-comment" style="display:inline-block;width:300px;text-align:left" title="'. $file .'">' . basename(dirname($file)).'<span class="">/</span><span class="cm-atom">'.basename($filepath) . '</span></span>'
+  .'<span class="cm-variable">' . $func . '</span>'
+  .'<span class="cm-bracket">(</span><span class="cm-variable-2">' . $args .'</span><span class="cm-bracket">)</span>'
+  .'<span class="divider cm-comment"></span>'
+  .'</div>';
+
+  return $str;
 }
 
 function sa_get_bt_arg(&$arg) { // retreives backtrace arguments
@@ -332,6 +353,15 @@ function debugPair($key,$value){ // debuglog as key pair
 // unit tests
 function sa_debugtest(){
 
+  // GLOBAl $debugLogFunc;
+  // $debugLogFunc = 'dl';
+  
+  dl("dl funcname","test");  // dl() alias functionname
+  _debugLog("_debugLog funcname","test"); // _debugLog standard funcname 
+
+  _debugLog(); // empty call
+  dl();
+
   // vdump($plugins); 
   
   // object to console
@@ -342,7 +372,7 @@ function sa_debugtest(){
   $book->amazon_link  = "http://www.amazon.com/dp/0439136369/";
     
   $tstring  = "a string";
-  $tmstring 	= "a multiline string\nanother line of multiline string And yet another";
+  $tmstring 	= "a multiline string\nanother line of multiline string\n And yet another";
   $tint 		= 1;
   $tfloat 	= 1.2;
   $tfloatNAN = NAN;

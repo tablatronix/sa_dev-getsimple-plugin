@@ -548,20 +548,24 @@ function sa_get_codeline($line,$codeline){
 }
 
 // CORE FUNCTIONS
-function _debugLog(){ 
-  /* variable arguments */
-  if(sa_getErrorChanged()){
-    debugTitle('PHP Error Level changed: <small>(' . error_reporting() . ') ' .error_level_tostring(error_reporting(),'|') . '</small>','notice');  
-  } 
-  if(function_exists('debugLog'))  debugLog(vdump(func_get_args()));
+function _debugLog(/* variable arguments */){ 
+  debuglogprepare(func_get_args());
 }
 
-function _debugReturn(){
+function _debugReturn(/* variable arguments */){
   return vdump(func_get_args());
 }
 
+function dl(/* variable arguments */){
+  debuglogprepare(func_get_args(),__FUNCTION__);
+};
 
-xdebug_overload_var_dump();
+function debuglogprepare($args,$funcname = null){
+  if(sa_getErrorChanged()){
+    debugTitle('PHP Error Level changed: <small>(' . error_reporting() . ') ' .error_level_tostring(error_reporting(),'|') . '</small>','notice');  
+  } 
+  if(function_exists('debugLog'))  debugLog(vdump(array($args),$funcname));  
+}
 
 function xdebug_overload_var_dump($enable = null){
   if(isset($enable)){
@@ -574,25 +578,28 @@ function xdebug_overload_var_dump($enable = null){
   return ini_get('xdebug.default_enable') == 1 && ini_get('xdebug.overload_var_dump') == 1;
 }
 
-function vdump($args){
+function vdump($args,$func = null){
     
     GLOBAL $debugLogFunc,$overridexdebug;
     
     $debugstr = ''; // for local debugging because we can create infinite loops by using debuglog inside debuglogs
     
     if(isset($args) and gettype($args)!='array'){
+      die('args missing');
       $args = func_get_args();
       $numargs = func_num_args();      
     }else{
       $numargs = count($args);
-    }   
+    }
     
     // ! backtrace arguments are passed by reference !  
     // todo: make this totally safe with no chance of modifying arguments. make copies of everything
     
     $backtrace = debug_backtrace();
     # echo "<pre>".print_r($backtrace,true)."</pre>"; 
-    $lineidx =  sadev_btGetFuncIndex($backtrace,$debugLogFunc);   
+    
+    $dlfuncname = isset($func) ? $func : $debugLogFunc;
+    $lineidx =  sadev_btGetFuncIndex($backtrace,$dlfuncname);   
     if(!isset($lineidx)) $lineidx = 1;
     $funcname = $backtrace[$lineidx]['function'];
     $file = $backtrace[$lineidx]['file'];
@@ -664,7 +671,7 @@ function vdump($args){
       $str.=('<span class="titlebar"'.sa_get_titlebar($file,$line, sa_get_codeline($line,$codeline) ) );
       $str.= $collapsestr;
       $str.= '<b>Backtrace</b><span class="cm-tag"> &rarr;</span><br />';
-      $str.= nl2br(sa_debug_backtrace(2));    
+      $str.= nl2br(sa_debug_backtrace(2,$backtrace));
       $str.= '</span>';         
       return $str;
     }
@@ -1003,6 +1010,7 @@ function sa_settings_extras(){
   include('sa_development/settings.php');
 }
 
+dl();
 
 /**
   @fixed: @float(NAN 
