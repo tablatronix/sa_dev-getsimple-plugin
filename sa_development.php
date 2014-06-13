@@ -21,6 +21,8 @@ $sa_url     = 'http://tablatronix.com/getsimple-cms/sa-dev-plugin/';
 $SA_CM_THEME = "cm-s-default";
 $SA_CM_THEME = "cm-s-monokai";
 
+if(isset($_GET['theme'])) $SA_CM_THEME  = $_GET['theme'];
+
 # get correct id for plugin
 $thisfile    = basename(__FILE__, ".php");// Plugin File
 $sa_pname    = 'SA Development';          //Plugin name
@@ -315,8 +317,15 @@ function sa_debugConsole(){  // Display the log
       $('#sa_gsdebug .expandall').on('click',expandAll);
 
     ";
+    echo "
+    $('#sa_gsdebug').scroll(function(e){
+      console.log('scrolling');
+      var offset = $(this).scrollTop();
+      $('#collapser').css('top',offset);
+    });
 
-    echo '});';    
+    ";
+    echo "\n});";    
     echo '}(jQuery));';
     echo '</script>';
     }
@@ -333,8 +342,8 @@ function sa_debugConsole(){  // Display the log
     
     echo "\n";
     echo'<div id="sa_gsdebug" class="'.$SA_CM_THEME.'">';
-    echo'<div id="float"></div>';
-    echo '<span id="collapser" class="cm-comment"><a class="collapseall">collapse</a><span> | </span><a class="expandall">expand</a></span>';
+    // echo'<div id="float"></div>';
+    echo '<span id="collapser" class="cm-keyword"><a class="collapseall">collapse</a><span> | </span><a class="expandall">expand</a></span>';
     echo '<pre>';
 
     if(!$sa_console_sent){    
@@ -385,7 +394,7 @@ function sa_debugConsole(){  // Display the log
           <span class="sa_icon_wrap"><span class="sa_icon sa_icon_mempeak"></span>Peak Memory: '. byteSizeConvert(memory_get_peak_usage()) .'</span>
           <span class="sa_icon_wrap"><span class="sa_icon sa_icon_memlimit"></span>Mem Avail: '. ini_get('memory_limit') .'</span>
         ';
-        if(!empty($open_basedir_val)) echo '<span class="sa_icon_wrap"><span class="sa_icon sa_icon_diskfree"></span>Disk Avail: '. byteSizeConvert(disk_free_space("/")) .' / ' . byteSizeConvert(disk_total_space("/")) .'</span>';
+        if(empty($open_basedir_val)) echo '<span class="sa_icon_wrap"><span class="sa_icon sa_icon_diskfree"></span>Disk Avail: '. byteSizeConvert(disk_free_space("/")) .' / ' . byteSizeConvert(disk_total_space("/")) .'</span>';
         echo '</div>';
     }
     echo '</div></div>';
@@ -500,7 +509,7 @@ class StopWatch {
     } 
     
     public function elapsed() { 
-        return microtime(true) - $this->total; 
+        return round(microtime(true) - $this->total,6); 
     } 
     
     public function reset() { 
@@ -712,26 +721,26 @@ function sa_dev_highlighting($str){
     // $str = preg_replace('/&gt; NULL/', '&gt; <span class="cm-def">NULL</span>', $str); // array nulls
     $str = preg_replace('/(\s)NULL/', ' <span class="cm-def">NULL</span>', $str); // string nulls, just 'NULL'
     $str = preg_replace('/}\n(\s+)\[/', "}\n\n".'$1[', $str);
-    $str = preg_replace('/((?:&amp;)?float|(?:&amp;)?int)\((\-?[\d\.\-E]+)\)/',"<!-- 01 --><span class='cm-default'>$1</span> <span class='cm-number'>$2</span>", $str); // float(n.n) | int(n)
-    $str = preg_replace('/((?:&amp;)?float)\((\-?NAN+)\)/',                    "<!-- 02 --><span class='cm-default'>$1</span> <span class='cm-def'>$2 <span class='cm-comment'>(Not a Number)</span></span>", $str); // float(NAN)
-    $str = preg_replace('/((?:&amp;)?float)\((\-?INF+)\)/',                    "<!-- 03 --><span class='cm-default'>$1</span> <span class='cm-def'>$2 <span class='cm-comment'>(Infinity)</span></span>", $str); // float(INF)
-    $str = preg_replace('/(?:&amp;)?array\((\d+)\) {\s+}\n/',                  "<!-- 04 --><span class='cm-default'>array&bull;$1</span> <span class='cm-bracket'><b>[]</b></span>", $str);
-    $str = preg_replace('/(?:&amp;)?array\((\d+)\) {\n/',                      "<!-- 05 --><span class='cm-default'>array&bull;$1</span> <span class='cm-bracket'>{</span>\n<span class='codeindent'>", $str);
-      $str = preg_replace('/Array\n\(\n/',                                     "<!-- 06 -->\n<span class='cm-default'>array</span> <span class='cm-bracket'>(</span>\n<span class='codeindent'>", $str);
-      $str = preg_replace('/Array\n\s+\(\n/',                                  "<!-- 07 --><span class='cm-default'>array</span> <span class='cm-bracket'>(</span>\n<span class='codeindent'>", $str);
-      $str = preg_replace('/Object\n\s+\(\n/',                                 "<!-- 08 --><span class='cm-default'>object</span> <span class='cm-bracket'>(</span>\n<span class='codeindent'>", $str);
-    $str = preg_replace('/(?:&amp;)?string\((\d+)\) \"(.*)\"/',                "<!-- 09 --><span class='cm-default'>str&bull;$1</span> <span class='cm-string'>'$2'</span>", $str); // &(opt)string(n) "string with "quotes" "
-    $str = preg_replace('/(?:&amp;)?string\((\d+)\) \"([^"\']*)\"/s',          "<!-- 09 --><span class='cm-default'>str&bull;$1</span> <span class='cm-string'>'$2'</span>", $str); // &(opt)string(n) "string with \n"
+    $str = preg_replace('/((?:&amp;)?float|(?:&amp;)?int)\((\-?[\d\.\-E]+)\)/',"<!-- 01 --><span class='cm-variable-2'>$1</span> <span class='cm-number'>$2</span>", $str); // float(n.n) | int(n)
+    $str = preg_replace('/((?:&amp;)?float)\((\-?NAN+)\)/',                    "<!-- 02 --><span class='cm-variable-2'>$1</span> <span class='cm-def'>$2 <span class='cm-comment'>(Not a Number)</span></span>", $str); // float(NAN)
+    $str = preg_replace('/((?:&amp;)?float)\((\-?INF+)\)/',                    "<!-- 03 --><span class='cm-variable-2'>$1</span> <span class='cm-def'>$2 <span class='cm-comment'>(Infinity)</span></span>", $str); // float(INF)
+    $str = preg_replace('/(?:&amp;)?array\((\d+)\) {\s+}\n/',                  "<!-- 04 --><span class='cm-variable-2'>array&bull;$1</span> <span class='cm-bracket'><b>[]</b></span>", $str);
+    $str = preg_replace('/(?:&amp;)?array\((\d+)\) {\n/',                      "<!-- 05 --><span class='cm-variable-2'>array&bull;$1</span> <span class='cm-bracket'>{</span>\n<span class='codeindent'>", $str);
+      $str = preg_replace('/Array\n\(\n/',                                     "<!-- 06 -->\n<span class='cm-variable-2'>array</span> <span class='cm-bracket'>(</span>\n<span class='codeindent'>", $str);
+      $str = preg_replace('/Array\n\s+\(\n/',                                  "<!-- 07 --><span class='cm-variable-2'>array</span> <span class='cm-bracket'>(</span>\n<span class='codeindent'>", $str);
+      $str = preg_replace('/Object\n\s+\(\n/',                                 "<!-- 08 --><span class='cm-variable-2'>object</span> <span class='cm-bracket'>(</span>\n<span class='codeindent'>", $str);
+    $str = preg_replace('/(?:&amp;)?string\((\d+)\) \"(.*)\"/',                "<!-- 09 --><span class='cm-variable-2'>str&bull;$1</span> <span class='cm-string'>'$2'</span>", $str); // &(opt)string(n) "string with "quotes" "
+    $str = preg_replace('/(?:&amp;)?string\((\d+)\) \"([^"\']*)\"/s',          "<!-- 09 --><span class='cm-variable-2'>str&bull;$1</span> <span class='cm-string'>'$2'</span>", $str); // &(opt)string(n) "string with \n"
     $str = preg_replace('/\[\"(.+)\"\] &gt; /',                                "<!-- 10 --><span style='color:#666'>'<span class='cm-string'>$1</span>'</span> <span class='cm-tag'>&rarr;</span> ", $str);
       $str = preg_replace('/\[([a-zA-Z\s_]+)\]  &gt; /',                       "<!-- 11 --><span style='color:#666'>'<span class='cm-string'>$1</span>'</span> <span class='cm-tag'>&rarr;</span> ", $str);
       $str = preg_replace('/\[(\d+)\]  &gt; /',                                "<!-- 12 --><span style='color:#666'>[<span class='cm-string'>$1</span>]</span> <span class='cm-tag'>&rarr;</span> ", $str);
     $str = preg_replace('/\[(\d+)\] &gt; /',                                   "<!-- 13 --><span style='color:#666'>[<span class='cm-string'>$1</span>]</span> <span class='cm-tag'>&rarr;</span> ", $str);
-    $str = preg_replace('/(?:&amp;)?object\((\S+)\)#(\d+) \((\d+)\) {\s+}\n/', "<!-- 14 --><span class='cm-default'>obj&bull;$2</span> <span class='cm-keyword'>$1[$3]</span> <span class='cm-keyword'>{}</span>", $str);
-    $str = preg_replace('/(?:&amp;)?object\((\S+)\)#(\d+) \((\d+)\) {\n/',     "<!-- 15 --><span class='cm-default'>obj&bull;$2</span> <span class='cm-keyword'>$1[$3]</span> <span class='cm-keyword'>{</span>\n<span class='codeindent'>", $str);
-    $str = str_replace('bool(false)',                                          "<!-- 16 --><span class='cm-default'>bool&bull;</span><span class='cm-number'><b>false</b></span>", $str); // bool(false)
-    $str = str_replace('&amp;bool(false)',                                     "<!-- 17 --><span class='cm-default'>bool&bull;</span><span class='cm-number'><b>false</b></span>", $str); // &bool(false)
-    $str = str_replace('bool(true)',                                           "<!-- 18 --><span class='cm-default'>bool&bull;</span><span class='cm-number'><b>true</b></span>", $str);  // bool(true)
-    $str = str_replace('&amp;bool(true)',                                      "<!-- 19 --><span class='cm-default'>bool&bull;</span><span class='cm-number'><b>true</b></span>", $str);  // &bool(true)
+    $str = preg_replace('/(?:&amp;)?object\((\S+)\)#(\d+) \((\d+)\) {\s+}\n/', "<!-- 14 --><span class='cm-variable-2'>obj&bull;$2</span> <span class='cm-keyword'>$1[$3]</span> <span class='cm-keyword'>{}</span>", $str);
+    $str = preg_replace('/(?:&amp;)?object\((\S+)\)#(\d+) \((\d+)\) {\n/',     "<!-- 15 --><span class='cm-variable-2'>obj&bull;$2</span> <span class='cm-keyword'>$1[$3]</span> <span class='cm-keyword'>{</span>\n<span class='codeindent'>", $str);
+    $str = str_replace('bool(false)',                                          "<!-- 16 --><span class='cm-variable-2'>bool&bull;</span><span class='cm-number'><b>false</b></span>", $str); // bool(false)
+    $str = str_replace('&amp;bool(false)',                                     "<!-- 17 --><span class='cm-variable-2'>bool&bull;</span><span class='cm-number'><b>false</b></span>", $str); // &bool(false)
+    $str = str_replace('bool(true)',                                           "<!-- 18 --><span class='cm-variable-2'>bool&bull;</span><span class='cm-number'><b>true</b></span>", $str);  // bool(true)
+    $str = str_replace('&amp;bool(true)',                                      "<!-- 19 --><span class='cm-variable-2'>bool&bull;</span><span class='cm-number'><b>true</b></span>", $str);  // &bool(true)
     $str = preg_replace('/}\n/',                                               "<!-- 20 --></span>\n<span class='cm-bracket'>}</span>\n", $str); // closing ) bracket
       $str = preg_replace('/\)\n/',                                            "<!-- 21 --></span>\n<span class='cm-bracket'>)</span>\n", $str); // closing } bracket
     

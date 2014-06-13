@@ -121,6 +121,7 @@
     overflow:auto;
     color:#000;
     font-size:12px;
+    position:relative;
   }
   
   #sa_gsdebug b{
@@ -142,8 +143,9 @@
   }
   
   #sa_gsdebug pre *{
-    font-family: Courier New, Courier, Fixed;      
-    font-size:1.0em;     
+    font-family: Consolas, Monaco, Menlo, 'Ubuntu Mono', 'Droid Sans Mono', monospace;   
+    font-size:1.0em;
+    line-height: 1.2em;
   }  
 
   #sa_gsdebug pre small{
@@ -164,14 +166,23 @@
   #sa_gsdebug #collapser{
     margin:2px 5px 0 0 ;
     float:right;
+    /*opacity:.2;*/
+    position:absolute;
+    top:0;
+    right:0;
+    background-color: rgba(117, 117, 117, 0.23);
+    border-radius: 3px;
+    padding: 1px 8px;
   }
   
-  #sa_gsdebug #collapser span{
-    opacity:.2;
-  } 
+#sa_gsdebug #collapser span{
+    opacity:.6;
+  }
 
   #sa_gsdebug #collapser a{
-    opacity:.3;
+    opacity:.5;
+    cursor:pointer;
+    color:inherit;
   }
 
   #sa_gsdebug #collapser a:hover{
@@ -202,7 +213,7 @@
 		/* border:1px solid #DF8F90 !important;		 */
 	}
 
-	#sa_gsdebug .titlebar.notice, #sa_gsdebug .titlebar.notice small{
+	#sa_gsdebug .titlebar.notice{
 		color:#FFF !important;
 		background-color:rgba(40, 80, 193, 0.75) !important;
 		/* border:1px solid #9FC7F5 !important;		 */
@@ -447,7 +458,7 @@
 #sa_gsdebug span.cm-property {color: black;}
 #sa_gsdebug span.cm-operator {color: black;}
 #sa_gsdebug span.cm-comment {color: #a50;}
-#sa_gsdebug span.cm-string {color: #a11; font-weight: bold;}
+#sa_gsdebug span.cm-string {color: #a11; }
 #sa_gsdebug span.cm-meta {color: #555;}
 #sa_gsdebug span.cm-error {color: #f00;}
 #sa_gsdebug span.cm-qualifier {color: #555;}
@@ -492,6 +503,9 @@
 #sa_gsdebug.cm-s-monokai span.cm-bracket {color: #f8f8f2;}
 #sa_gsdebug.cm-s-monokai span.cm-tag {color: #f92672;}
 #sa_gsdebug.cm-s-monokai span.cm-link {color: #ae81ff;}
+
+
+#sa_gsdebug span.cm-variable-2 { font-style:italic; }
 
 #gsdebug {
   display:none !important;
