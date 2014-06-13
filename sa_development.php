@@ -329,7 +329,7 @@ function sa_debugConsole(){  // Display the log
     echo '}(jQuery));';
     echo '</script>';
     }
-    echo '<div id="sa_gsdebug-wrapper">
+    echo '<div id="sa_gsdebug-wrapper" class="fullwidth">
     <div class="sa_gsdebug-wrap">';
     
     if(!$sa_console_sent){
@@ -342,13 +342,13 @@ function sa_debugConsole(){  // Display the log
     
     echo "\n";
     echo'<div id="sa_gsdebug" class="'.$SA_CM_THEME.'">';
-    // echo'<div id="float"></div>';
+    // echo'<div id="float"><div class="marker"></div></div>';
     echo '<span id="collapser" class="cm-keyword"><a class="collapseall">collapse</a><span> | </span><a class="expandall">expand</a></span>';
     echo '<pre>';
 
     if(!$sa_console_sent){    
       echo 'GS Debug mode is: ' . ((defined('GSDEBUG') and GSDEBUG == 1) ? '<span class="cm-tag"><b>ON</b></span>' : '<span class="cm-error"><b>OFF</b></span>') . '<br />';
-      echo 'PHP Error Level: <small><span class="cm-comment">(' . $sa_phperr_init . ') ' .error_level_tostring($sa_phperr_init,'|') . "</span></small><span class='divider cm-comment'></span>";
+      echo 'PHP Error Level: <small><span class="cm-comment">(' . $sa_phperr_init . ') ' .error_level_tostring($sa_phperr_init,'|') . "</span></small>";
       
       // XDEBUG WARNINGS
       $xdebugstate = xdebug_overload_var_dump();
@@ -359,6 +359,9 @@ function sa_debugConsole(){  // Display the log
         else  echo  '<span class="cm-tag">. Unable to disable, output may not appear properly</span></div>';
         if($overridexdebug) xdebug_overload_var_dump($xdebugstate); // restore xdebug
       }
+
+      echo "<span class='divider cm-comment'></span>";
+
     }else{
       echo 'Post footer alerts<br />';
     }
@@ -993,7 +996,7 @@ function sa_getErrorChanged(){
   }
 }
 
-// add_action('settings-website-extras','sa_settings_extras');
+add_action('settings-website-extras','sa_settings_extras');
 
 function sa_settings_extras(){
   // echo 'sa_settings_extras';

@@ -236,7 +236,7 @@ function sadev_btGetFuncIndex($backtrace,$funcname){
 
 function bmark_line(){
   GLOBAL $stopwatch;
-	return '<span class="bmark">'.$stopwatch->elapsed()*1000 . ' ms </span><span class="bmark">' . byteSizeConvert(memory_get_usage()) . '</span>';
+	return '<span class="bmark">'.number_format($stopwatch->elapsed()*1000) . ' ms </span><span class="bmark">' . byteSizeConvert(memory_get_usage()) . '</span>';
 }
 
 function sa_dumpHooks($hookname = NULL,$exclude = false,$actions = false){

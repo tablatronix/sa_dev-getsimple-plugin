@@ -73,6 +73,11 @@
     -webkit-animation: barberpole 0.5s linear infinite;    
   }
 
+  #sa_gsdebug-wrapper.fullwidth{
+    position:absolute;
+    left:0;
+  }
+
   #sa_gsdebug-wrapper{
     width:100%;
     margin-top: 0 auto;
@@ -81,12 +86,12 @@
     padding:3px 0 5px 0;
   }
   
-    #sa_gsdebug-wrapper .sa_gsdebug-wrap{
-    margin:10px;
-    margin-bottom:5px;
-    background:none;
-    background-color:#DDD;    
-  }
+  #sa_gsdebug-wrapper .sa_gsdebug-wrap{
+  margin:10px;
+  margin-bottom:5px;
+  background:none;
+  background-color:#DDD;    
+}
 
   #sa_gsdebug-wrapper #sa_debug_title {
     font-size:18px;
@@ -123,7 +128,7 @@
     font-size:12px;
     position:relative;
   }
-  
+
   #sa_gsdebug b{
     font-weight:bold;
   }  
@@ -528,7 +533,8 @@
     background-color: rgba(100,100,100,.2);
 }
 
-/* scrollbars */
+/* expermental scrollbars */
+/* scrollbar index mark test add .smark class to #sa_gsdebug */
 #sa_gsdebug.smark::-webkit-scrollbar {
 
     background-image: linear-gradient(
@@ -637,19 +643,43 @@
     background-color: transparent;
 }
 
+/* Settings */
 
+/* divider lines */
+.rightsec.divider {
+  border-left: 1px solid rgba(168, 168, 168, 0.29);
+  margin-left: -4px;
+  padding-left: 11px;
+  margin-right: -8px;
+}
+
+.leftsec.divider {
+  border-right: 1px solid rgba(168, 168, 168, 0.29);  
+  margin-left: -7px;
+  margin-right: 7px;
+  padding-left: 7px;
+  box-sizing: border-box;
+}
+
+
+
+
+/* ------------------------------------------------ */
 
 /**
- * EXPERIMENTAL STUFF
+ * EXPERIMENTAL STUFF BELOW
  */
+
 /* trackbar background */
 /* could also use a gradient as background with stops */
 
-#sa_gsdebug.translateZ {
+#sa_gsdebug {
+  /* this alows fixed to be on container somehow */
   -webkit-transform: translateZ(0);
 }
 
 #float{
+  /* fixed will have to be js adjusted to top , it will not actually fix on overflow scrolled div */
   background-color: rgba(100,100,100,.2);
 
   height: 100%;
@@ -662,19 +692,24 @@
   pointer-events:none;
 }
 
-#float .marker {
+#float div.marker {
   background-color: #FF00FF;
   height:1px;
   margin-top:80px;
 }
 
-#float .marker-red {
+#float div.marker-red {
   background-color: #00FFFF;
 }
 
 /* hacked forms */
 
-/* background containers */
+/* sections with background tited containers 
+  .section_alt not implemented 
+  this corrects for the lack of any kind of containers for settings, which prevent the use of borders or backgrounds or even padding
+  this is basicly the result of terrible css on these elements in core
+*/
+
 div.section_alt{
   /*background-color: rgba( 128, 128, 128, 0.07);*/
   border: 1px solid rgba( 128, 128, 128, 0.1);
@@ -721,24 +756,8 @@ div.section_alt .widesec {
   margin-right: 8px;
 }
 
-/* divider lines */
-.rightsec.divider {
-  border-left: 1px solid rgba(168, 168, 168, 0.29);
-  margin-left: -4px;
-  padding-left: 11px;
-  margin-right: -8px;
-}
 
-.leftsec.divider {
-  border-right: 1px solid rgba(168, 168, 168, 0.29);  
-  margin-left: -7px;
-  margin-right: 7px;
-  padding-left: 7px;
-  box-sizing: border-box;
-
-}
-
-
+/* time markers on bmarks #sa_gsdebug .bmeter */
 #sa_gsdebug.bmeter .titlebar .bmark {
     background-color: rgba(100,100,100,.2);
 
