@@ -72,6 +72,7 @@ function byteSizeConvert($size){ // returns formatted byte string
 function arr_to_csv_line($arr) { // returns array as comma list of args
 		// todo: fix handlng of object classes
     $line = array();
+    if(!$arr) return;
 		foreach ($arr as $v) {
 				# _debugLog($v);
 				$line[] = ( is_array($v) or is_object($v) ) ? 'array(' . arr_to_csv_line($v) . ')' : '"' . str_replace('"', '""', $v) . '"';
@@ -166,7 +167,7 @@ function sa_debug_backtrace($skip = null,$backtrace=null){
     foreach($traces as $i => $call){
         if (isset($skip) and $i < $skip) {
             continue;
-        }  
+        }
         
         if (isset($call['class'])) {
             $call['object'] = $call['class'].$call['type'];
@@ -175,7 +176,7 @@ function sa_debug_backtrace($skip = null,$backtrace=null){
                     sa_get_bt_arg($arg); // get function args for display
                 }
             }
-        }        
+        }
         
         $ret[] = sa_backtrace_template($i-$skip,$call);
     }
@@ -193,7 +194,7 @@ function sa_backtrace_template($index,$call){
   $filepath = sa_get_path_rel($file);
   $linenum  = isset($call['line']) ? $call['line'] : '--';
   $func     = $call['function'];
-  $args     = arr_to_csv_line($call['args']);
+  $args     = isset($call['args']) ? arr_to_csv_line($call['args']) : '';
 
 
   // #0 __FUNCTION__("argument") called at [__FILE__:__LINE__]
@@ -360,7 +361,7 @@ function sa_debugtest(){
   _debugLog("_debugLog funcname","test"); // _debugLog standard funcname 
 
   _debugLog(); // empty call
-  dl();
+  dl(); // empty alias call
 
   // vdump($plugins); 
   
@@ -441,12 +442,16 @@ function sa_debugtest(){
   _debugLog($tint);
   _debugLog($tfloat);
   _debugLog($tnull);
-  
-  #sa_bmark_debug('vdump BEGIN');
-  #for($i=0;$i<50;$i++){ vdump($_SERVER);}
-  #sa_bmark_debug('vdump END');        
 
-_debugLog(nl2br("  
+  sa_bmark_debug('sa_bmark_debug');
+  // sa_bmark_print('sa_bmark_debug');
+  
+  // sa_bmark_debug('vdump BEGIN');
+  // for($i=0;$i<50;$i++){ vdump($_SERVER);}
+  // sa_bmark_debug('vdump END');
+
+
+_debugLog(nl2br("
 <span class=cm-default>default</span>
 <span class=cm-comment>comment</span>
 <span class=cm-atom>atom</span>
@@ -462,7 +467,7 @@ _debugLog(nl2br("
 <span class=cm-bracket>bracket</span>
 <span class=cm-tag>tag</span>
 <span class=cm-link>link</span>
-"));  
+"));
 
 sa_setErrorReporting(2);
 _debugLog('error reporting changing');
@@ -470,7 +475,7 @@ _debugLog('error reporting changing');
 sa_setErrorReporting(5);
 _debugLog('test');
 _debugLog('test',myfunc('test','test'),$tstring);
-_debugLog(my_func('test','test'));  
+_debugLog(my_func('test','test'));
 
 debugLog('string');
 debugLog($tstring);
@@ -499,7 +504,7 @@ trigger_error('This is a warning', E_USER_WARNING);
 trigger_error('This is a Notice', E_USER_NOTICE);
 trigger_error('This is a Fatal Error', E_USER_ERROR);
 
-}      
+}
 
 function myfunc($a,$b){
   return $a;
@@ -508,5 +513,5 @@ function myfunc($a,$b){
 function my_func($a='test',$b='test'){
   return array($a,$b);
 }
-  
-  ?>
+
+?>

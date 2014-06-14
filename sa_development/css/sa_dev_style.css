@@ -370,6 +370,7 @@
 }
 */
 
+/* @todo fix this negative margin shit */
 .sa_expand {
   pointer-events: none;
   display:block;
@@ -418,16 +419,16 @@
   vertical-align:middle;
   line-height:16px !important;
   font-size:10px !important;
-  color:#777 !important; 
+  color:#777 !important;
   margin:0 5px;
 }
 
 .sa_icon {
   width:16px !important;
   height:16px !important;
-  background-image: url('../img/iconssprite.png') !important;  
+  background-image: url('../img/iconssprite.png') !important;
   background-position: -78px -145px !important;
-  background-repeat:no-repeat;  
+  background-repeat:no-repeat;
   padding: 0 16px 0 0 ;
 }
 
@@ -441,6 +442,10 @@
 
 .sa_icon_time{
   background-position: -336px -114px !important;
+}
+
+.sa_expand.sa_icon_time{
+  background-position: -337px -113px !important;
 }
 
 .sa_icon_files{
