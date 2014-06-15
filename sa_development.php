@@ -13,7 +13,7 @@
 $sa_dev_config = array(
   'showsupressederrors'        => false,
   'showerrorbacktracealways'   => true,  // showbacktrace for all errors ( notices|supressed ) perhaps use a special error reporting mask here
-  'showerrorcontext'           => true, // show error context (dump local vars)
+  'showerrorcontext'           => false, // show error context (dump local vars)
   'disablexdebug'              => false, // disable xdebug
   'overridexdebugvardump'      => true,  // overridexdebug var_dump ( only for var_dumps)
   'showrequestvars'            => true,  // show get and post vars always
