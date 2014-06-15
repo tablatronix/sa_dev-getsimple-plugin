@@ -2,7 +2,7 @@
 
 /*
 * @Plugin Name: sa_development
-* @Description: Provides alterative debug console
+* @Description: Provides alterative debug console and error reporting
 * @Version: 0.9
 * @Author: Shawn Alverson
 * @Author URI: http://tablatronix.com/getsimple-cms/sa-dev-plugin/
@@ -16,9 +16,10 @@ $SA_DEV_CONFIG = array(
   'showerrorcontext'           => false, // show error context (dump local vars)
   'disablexdebug'              => false, // disable xdebug
   'overridexdebugvardump'      => true,  // overridexdebug var_dump ( only for var_dumps)
-  'showrequestvars'            => true,  // NI show get and post vars always
-  'showerrorlevels'            => true,  // NI show error reporting levels and changes
-  'showerrors'                 => true   // NI use custom error handler
+  'showrequestvars'            => true,  // @todo NI show get and post vars always
+  'showerrorlevels'            => true,  // @todo NI show error reporting levels and changes
+  'showerrors'                 => true,   // @todo NI use custom error handler
+  'theme'                      => 'monokai' // 'monokai' or 'default'
 );
 
 function sa_dev_getconfig($id){
@@ -35,10 +36,10 @@ define('SA_DEBUG',false); // sa dev plugin debug for debugging itself
 $PLUGIN_ID   = "sa_development";
 $PLUGINPATH  = $SITEURL.'plugins/sa_development/';
 $sa_url      = 'http://tablatronix.com/getsimple-cms/sa-dev-plugin/';
-$SA_CM_THEME = "cm-s-default";
-$SA_CM_THEME = "cm-s-monokai";
+// $SA_CM_THEME = "cm-s-default";
+// $SA_CM_THEME = "cm-s-monokai";
 
-if(isset($_GET['theme'])) $SA_CM_THEME  = $_GET['theme'];
+// if(isset($_GET['theme'])) $SA_CM_THEME  = $_GET['theme'];
 
 # get correct id for plugin
 $thisfile    = basename(__FILE__, ".php");// Plugin File
@@ -362,7 +363,7 @@ function sa_debugConsole(){  // Display the log
     }
     
     echo "\n";
-    echo'<div id="sa_gsdebug" class="'.$SA_CM_THEME.'">';
+    echo'<div id="sa_gsdebug" class="cm-s-'.sa_dev_getconfig('theme').'">';
     // echo'<div id="float"><div class="marker"></div></div>';
     echo '<span id="collapser" class="cm-keyword"><a class="collapseall">collapse</a><span> | </span><a class="expandall">expand</a></span>';
     echo '<pre>';
