@@ -8,20 +8,24 @@
 * @Author URI: http://tablatronix.com/getsimple-cms/sa-dev-plugin/
 */
 
-/** config options **/
+/** config options and getter will merge $SA_DEV_USER_CONFIG for option override **/
 
-$sa_dev_config = array(
-  'showsupressederrors'        => false,
+$SA_DEV_CONFIG = array(
+  'showsuppressederrors'       => false,
   'showerrorbacktracealways'   => true,  // showbacktrace for all errors ( notices|supressed ) perhaps use a special error reporting mask here
   'showerrorcontext'           => false, // show error context (dump local vars)
   'disablexdebug'              => false, // disable xdebug
   'overridexdebugvardump'      => true,  // overridexdebug var_dump ( only for var_dumps)
-  'showrequestvars'            => true,  // show get and post vars always
-  'showerrorlevels'            => true,  // show error reporting levels and changes
-  'showerrors'                 => true   // use custom error handler
+  'showrequestvars'            => true,  // NI show get and post vars always
+  'showerrorlevels'            => true,  // NI show error reporting levels and changes
+  'showerrors'                 => true   // NI use custom error handler
 );
 
-// @todo use array merge from user options
+function sa_dev_getconfig($id){
+  GLOBAL $SA_DEV_CONFIG,$SA_DEV_USER_CONFIG;
+  if(isset($SA_DEV_USER_CONFIG)) $SA_DEV_CONFIG = array_merge($SA_DEV_CONFIG,$SA_DEV_USER_CONFIG);
+  return sa_array_index($SA_DEV_CONFIG,$id);
+}
 
 // global to force console on front end even when not logged in
 $SA_DEV_ON = isset($SA_DEV_ON) ? $SA_DEV_ON : false;
@@ -53,10 +57,11 @@ register_plugin($thisfile,$sa_pname,$sa_pversion,$sa_pauthor,$sa_url,$sa_pdesc,$
 require_once('sa_development/hooks.php');
 require_once('sa_development/sa_dev_functions.php');
 
-if(sa_dev_getconfig('disablexdebug')) xdebug_overload_var_dump(false); // disable xdebug
-  
 // init timer
 $stopwatch = new StopWatch();
+
+if(sa_dev_getconfig('disablexdebug')) xdebug_overload_var_dump(false); // disable xdebug
+  
 
 if(SA_DEBUG==true){
   error_reporting(E_ALL);
@@ -111,11 +116,6 @@ sa_initHookDebug();
 sa_initFilterDebug(); // @todo this needs work
 
 // FUNCTIONS
-function sa_dev_getconfig($id){
-  GLOBAL $sa_dev_config;
-  return sa_array_index($sa_dev_config,$id);
-}
-
 
 // ARG LOGIC
 function sa_showingFilters(){
@@ -797,7 +797,7 @@ function sa_dev_ErrorHandler($errno, $errstr='', $errfile='', $errline='',$errco
     $errorReporting = error_reporting();
     
     // handle supressed errors
-    $debugSuppressed  = sa_dev_getconfig('showsupressederrors');
+    $debugSuppressed  = sa_dev_getconfig('showsuppressederrors');
     
     $showingSuppressed = false; // flag
     
