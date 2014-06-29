@@ -28,6 +28,12 @@ function sa_dev_getconfig($id){
   return sa_array_index($SA_DEV_CONFIG,$id);
 }
 
+function sa_dev_setconfig($id,$value){
+  GLOBAL $SA_DEV_USER_CONFIG;
+  if(!isset($SA_DEV_USER_CONFIG)) $SA_DEV_USER_CONFIG = array();
+  $SA_DEV_USER_CONFIG['id'] = $value;
+}
+
 // global to force console on front end even when not logged in
 $SA_DEV_ON = isset($SA_DEV_ON) ? $SA_DEV_ON : false;
 
