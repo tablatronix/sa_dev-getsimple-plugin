@@ -587,10 +587,6 @@ function _debugReturn(/* variable arguments */){
   return vdump(func_get_args());
 }
 
-function dl(/* variable arguments */){
-  debuglogprepare(func_get_args(),__FUNCTION__);
-};
-
 function debuglogprepare($args,$funcname = null){
   if(sa_getErrorChanged()){
     debugTitle('PHP Error Level changed: <small>(' . error_reporting() . ') ' .error_level_tostring(error_reporting(),'|') . '</small>','notice');
