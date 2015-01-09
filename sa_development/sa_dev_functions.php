@@ -171,7 +171,7 @@ function sa_debug_backtrace($skip = null,$backtrace=null){
         
         if (isset($call['class'])) {
             $call['object'] = $call['class'].$call['type'];
-            if (is_array($call['args'])) {
+            if (isset($call['args']) && is_array($call['args'])) {
                 foreach ($call['args'] as &$arg) {
                     sa_get_bt_arg($arg); // get function args for display
                 }
@@ -258,7 +258,8 @@ function sadev_btGetFuncIndex($backtrace,$funcname){
 
 function bmark_line(){
   GLOBAL $stopwatch;
-	return '<span class="bmark">'.number_format($stopwatch->elapsed()*1000) . ' ms </span><span class="bmark">' . byteSizeConvert(memory_get_usage()) . '</span>';
+  if(!$stopwatch) return;
+  return '<span class="bmark">'.number_format($stopwatch->elapsed()*1000) . ' ms </span><span class="bmark">' . byteSizeConvert(memory_get_usage()) . '</span>';
 }
 
 function sa_dumpHooks($hookname = NULL,$exclude = false,$actions = false){
@@ -308,11 +309,11 @@ function sa_dumpHooks($hookname = NULL,$exclude = false,$actions = false){
 function sa_dumpFilters($filterName = NULL,$exclude = false){
   // dumps live hooks to debuglog , can filter or exclude
   global $filters;
-
+  if(!$filters) return;
   // _debugLog($filters);
   $sa_filters = $filters;
   $collapsestr= '<span class="sa_expand sa_icon_open"></span><span class="sa_collapse">';            
-  $hookdump = '<span class="titlebar">Dumping live filters: ' . (isset($filter) ? $filterName : 'All') .'</span>'.$collapsestr;
+  $hookdump = '<span class="titlebar">Dumping live filters: ' . (isset($filterName) ? $filterName : 'All') .'</span>'.$collapsestr;
   
   asort($sa_filters);
     

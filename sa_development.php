@@ -10,6 +10,10 @@
 
 /** config options and getter will merge $SA_DEV_USER_CONFIG for option override **/
 
+// init timer
+
+$stopwatch = new StopWatch();
+
 $SA_DEV_CONFIG = array(
   'showsuppressederrors'       => false,
   'showerrorbacktracealways'   => true,  // showbacktrace for all errors ( notices|supressed ) perhaps use a special error reporting mask here
@@ -39,8 +43,15 @@ $SA_DEV_ON = isset($SA_DEV_ON) ? $SA_DEV_ON : false;
 
 define('SA_DEBUG',false); // sa dev plugin debug for debugging itself
 
+if(!function_exists('getRelPath')){
+  function getRelPath($path,$root = GSROOTPATH ){
+    $relpath = str_replace($root,'',$path);
+    return $relpath;
+  }
+}
+
 $PLUGIN_ID   = "sa_development";
-$PLUGINPATH  = $SITEURL.'plugins/sa_development/';
+$PLUGINPATH  = $SITEURL. getRelPath(GSPLUGINPATH) . '/sa_development/';
 $sa_url      = 'http://tablatronix.com/getsimple-cms/sa-dev-plugin/';
 // $SA_CM_THEME = "cm-s-default";
 // $SA_CM_THEME = "cm-s-monokai";
@@ -63,9 +74,6 @@ register_plugin($thisfile,$sa_pname,$sa_pversion,$sa_pauthor,$sa_url,$sa_pdesc,$
 // INCLUDES
 require_once('sa_development/hooks.php');
 require_once('sa_development/sa_dev_functions.php');
-
-// init timer
-$stopwatch = new StopWatch();
 
 if(sa_dev_getconfig('disablexdebug')) xdebug_overload_var_dump(false); // disable xdebug
   
@@ -118,9 +126,12 @@ $overridexdebug = true;
 
 if(sa_showingFilters()) add_action('common','create_pagesxml',array(true));
 
+// var_dump(get_defined_vars());
+
 // INIT
 sa_initHookDebug();
 sa_initFilterDebug(); // @todo this needs work
+
 
 // FUNCTIONS
 
@@ -558,6 +569,7 @@ function sa_bmark_debug($msg = ""){
     GLOBAL $stopwatch;
     // debugLog('<span class="titlebar cm-keyword"><span class="cm-default">bmark</span> : ' . number_format(round($stopwatch->elapsed(),5),5) . "<b> &#711;</b>" . number_format(round($stopwatch->clock(),5),5) . " " . $msg . '</span>');
     $collapsestr= '<span class="sa_expand sa_icon_time"></span>';
+    GLOBAL $GS_debug;
     debugLog('<span class="titlebar cm-keyword">'.$msg.bmark_line().'</span>'.$collapsestr);
 }
 
@@ -587,11 +599,19 @@ function _debugReturn(/* variable arguments */){
   return vdump(func_get_args());
 }
 
+function dl(/* variable arguments */){
+  debuglogprepare(func_get_args(),__FUNCTION__);
+};
+
 function debuglogprepare($args,$funcname = null){
+  GLOBAL $GS_debug;
   if(sa_getErrorChanged()){
     debugTitle('PHP Error Level changed: <small>(' . error_reporting() . ') ' .error_level_tostring(error_reporting(),'|') . '</small>','notice');
   }
-  if(function_exists('debugLog'))  debugLog(vdump(array($args),$funcname));
+
+  $output = vdump(array($args),$funcname);
+  // echo '<pre>'.print_r($output,true).'</pre>';
+  array_push($GS_debug,$output);
 }
 
 function xdebug_overload_var_dump($enable = null){
@@ -606,7 +626,10 @@ function xdebug_overload_var_dump($enable = null){
 }
 
 function vdump($args,$func = null){
-    
+    // print_r($args);
+    local_debug($args);
+    local_debug($func);
+
     GLOBAL $debugLogFunc,$overridexdebug;
     
     $debugstr = ''; // for local debugging because we can create infinite loops by using debuglog inside debuglogs
@@ -623,19 +646,31 @@ function vdump($args,$func = null){
     // todo: make this totally safe with no chance of modifying arguments. make copies of everything
     
     $backtrace = debug_backtrace();
-    # echo "<pre>".print_r($backtrace,true)."</pre>";
+    local_debug("<h2>bt </h2><pre>".print_r($backtrace,true)."</pre>");
     
     $dlfuncname = isset($func) ? $func : $debugLogFunc;
+    local_debug("<h2>bt function</h2><pre>".print_r($dlfuncname,true)."</pre>");
+    
     $lineidx =  sadev_btGetFuncIndex($backtrace,$dlfuncname);
+    local_debug("<h2>bt lineindex</h2><pre>".print_r($lineidx,true)."</pre>");
+    
     if(!isset($lineidx)) $lineidx = 1;
     $funcname = $backtrace[$lineidx]['function'];
+    local_debug("<h2>bt funcname</h2><pre>".print_r($funcname,true)."</pre>");
+    
     $file = isset($backtrace[$lineidx]['file']) ? $backtrace[$lineidx]['file'] : __FILE__; // php bug
+    local_debug("<h2>bt file</h2><pre>".print_r($file,true)."</pre>");
     // @todo: handle evald code eg. [file] => /hsphere/local/home/salverso/tablatronix.com/getsimple_dev/plugins/i18n_base/frontend.class.php(127) : eval()'d code
     $line = isset($backtrace[$lineidx]['line']) ? $backtrace[$lineidx]['line'] : 0;
+    local_debug("<h2>bt line</h2><pre>".print_r($line,true)."</pre>");
+
     $code = @file($file);
+
     if($line > 0) $codeline = $code!=false ? trim($code[$line-1]) : 'anon function call';
     else $codeline = '';
     
+    local_debug("<h2>bt code</h2><pre>".print_r($codeline,true)."</pre>");
+    local_debug("hr");
     /* Finding our originating call in the backtrace so we can extract the code line and argument nesting depth
      *
      * If using custom function, we have to remove all the get_func_arg array wrappers n deep
@@ -707,8 +742,8 @@ function vdump($args,$func = null){
       // we add a slight divider for single line traces
       $str.="<span class='divider cm-comment'></span>";
     }
-        
-    
+      
+      if(!is_array($args)) return; // how the does this happen?
       foreach ($args as $arg){
         # if($argn > 0) print("\n");
         if(isset($argnames[$argn])){
@@ -746,6 +781,9 @@ function vdump($args,$func = null){
     // return nl2br($str).'</span><pre>'.nl2br(print_r($backtrace,true)).'</pre>';
 }
 
+function local_debug($msg){
+  // print_r($msg);
+}
 
 function sa_dev_highlighting($str){
     // added &? to datatypes for new reference output from var_dump
@@ -790,7 +828,7 @@ function sa_finalCallout(){
 
 function sa_dev_ErrorHandler($errno, $errstr='', $errfile='', $errline='',$errcontext=array()){
     GLOBAL $sa_phperr_init;
-    
+
     # _debugLog(error_reporting(),$errno, $errstr, $errfile, $errline);
     
     /*  Of particular note is that error_reporting() value will be 0 if
