@@ -805,6 +805,7 @@ function sa_dev_highlighting($str){
       $str = preg_replace('/Object\n\s+\(\n/',                                 "<!-- 08 --><span class='cm-variable-2'>object</span> <span class='cm-bracket'>(</span>\n<span class='codeindent'>", $str);
     $str = preg_replace('/(?:&amp;)?string\((\d+)\) \"(.*)\"/',                "<!-- 09 --><span class='cm-variable-2'>str&bull;$1</span> <span class='cm-string'>'$2'</span>", $str); // &(opt)string(n) "string with "quotes" "
     $str = preg_replace('/(?:&amp;)?string\((\d+)\) \"([^"\']*)\"/s',          "<!-- 09 --><span class='cm-variable-2'>str&bull;$1</span> <span class='cm-string'>'$2'</span>", $str); // &(opt)string(n) "string with \n"
+    $str = preg_replace('/(?:&amp;)?resource\((\d+)\) of type \((.*)\)/',      "<!-- 09 --><span class='cm-variable-2'>#$1</span> <span class='cm-keyword'>$2</span>", $str); // resource(#id) of type (resourcetype)
     $str = preg_replace('/\[\"(.+)\"\] &gt; /',                                "<!-- 10 --><span style='color:#666'>'<span class='cm-string'>$1</span>'</span> <span class='cm-tag'>&rarr;</span> ", $str);
       $str = preg_replace('/\[([a-zA-Z\s_]+)\]  &gt; /',                       "<!-- 11 --><span style='color:#666'>'<span class='cm-string'>$1</span>'</span> <span class='cm-tag'>&rarr;</span> ", $str);
       $str = preg_replace('/\[(\d+)\]  &gt; /',                                "<!-- 12 --><span style='color:#666'>[<span class='cm-string'>$1</span>]</span> <span class='cm-tag'>&rarr;</span> ", $str);

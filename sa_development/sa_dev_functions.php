@@ -403,6 +403,7 @@ function sa_debugtest(){
   'bool true'   => true,
   'bool false'  => false, 
   'object' 			=> new stdClass,
+  'resource'    => opendir("."),
   );  
   
 
