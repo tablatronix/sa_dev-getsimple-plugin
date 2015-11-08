@@ -748,7 +748,7 @@ function vdump($args,$func = null){
         # if($argn > 0) print("\n");
         if(isset($argnames[$argn])){
           $str.= '<span class="cm-variable"><b>' . trim($argnames[$argn]) . "</b></span> <span class='cm-tag'>&rarr;</span> ";
-          if(gettype($arg) == 'array' and count($arg)>0) echo "\n"; // push array contents to new line
+          if(gettype($arg) == 'array' and count($arg)>0) $str.= "\n"; // push array contents to new line
         }
 
         ob_start();
