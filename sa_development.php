@@ -599,9 +599,23 @@ function _debugReturn(/* variable arguments */){
   return vdump(func_get_args());
 }
 
-function dl(/* variable arguments */){
-  debuglogprepare(func_get_args(),__FUNCTION__);
-};
+if(!function_exists('dl')){ 
+  function dl(/* variable arguments */){
+    debuglogprepare(func_get_args(),__FUNCTION__);
+  };
+}
+
+if(!function_exists('log')){ 
+  function log(/* variable arguments */){
+    debuglogprepare(func_get_args(),__FUNCTION__);
+  };
+}
+
+if(!function_exists('debug')){ 
+  function debug(/* variable arguments */){
+    debuglogprepare(func_get_args(),__FUNCTION__);
+  };
+}
 
 function debuglogprepare($args,$funcname = null){
   GLOBAL $GS_debug;
