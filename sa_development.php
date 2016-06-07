@@ -822,7 +822,7 @@ function sa_dev_highlighting($str){
 
     $str = preg_replace('/=&gt;(\s+)/', ' &gt; ', $str); // remove whitespace
     // $str = preg_replace('/&gt; NULL/', '&gt; <span class="cm-def">NULL</span>', $str); // array nulls
-    $str = preg_replace('/(\s)NULL/', ' <span class="cm-def">NULL</span>', $str); // string nulls, just 'NULL'
+    $str = preg_replace('/(\s)((?:&amp;)?NULL)/', '$1<!-- 00 --><span class="cm-def">$2</span>', $str); // string nulls, just 'NULL' or '&NULL'
     $str = preg_replace('/}\n(\s+)\[/', "}\n\n".'$1[', $str);
     $str = preg_replace('/((?:&amp;)?float|(?:&amp;)?int)\((\-?[\d\.\-E]+)\)/',"<!-- 01 --><span class='cm-variable-2'>$1</span> <span class='cm-number'>$2</span>", $str); // float(n.n) | int(n)
     $str = preg_replace('/((?:&amp;)?float)\((\-?NAN+)\)/',                    "<!-- 02 --><span class='cm-variable-2'>$1</span> <span class='cm-def'>$2 <span class='cm-comment'>(Not a Number)</span></span>", $str); // float(NAN)

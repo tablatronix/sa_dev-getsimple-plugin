@@ -383,37 +383,38 @@ function sa_debugtest(){
   $book->publisher    = "Arthur A. Levine Books";
   $book->amazon_link  = "http://www.amazon.com/dp/0439136369/";
     
-  $tstring  = "a string";
-  $tmstring 	= "a multiline string\nanother line of multiline string\n And yet another";
-  $tint 		= 1;
-  $tfloat 	= 1.2;
+  $tstring   = "a string";
+  $tmstring  = "a multiline string\nanother line of multiline string\n And yet another";
+  $tint      = 1;
+  $tfloat    = 1.2;
   $tfloatNAN = NAN;
   $tfloatINF = INF;
-  $tdbl 		= 7E-10;
-  $tnull 		= null;
-  $tarray 	= array();
-  
+  $tdbl      = 7E-10;
+  $tnull     = null;
+  $tarray    = array();
+
   $testary = array(
-  'int' 				=> $tint,
-  'float'       => $tfloat,
-  'floatNAN'      => $tfloatNAN,
-  'floatINF' 			=> $tfloatINF,
-  'double' 			=> $tdbl,
-  'string'      => $tstring,
-  'multistring' => $tmstring,
-  'null' 				=> $tnull,
-  'empty array' => $tarray,
-  'array' 			=> array(  
-    'int' 				=> $tint,
-    'float' 			=> $tfloat,
-    'NULL'        => NULL,
-    'string'      => $tstring,
-    'nested array'=> array(1,2,3),
-  ),
-  'bool true'   => true,
-  'bool false'  => false, 
-  'object' 			=> new stdClass,
-  'resource'    => opendir("."),
+  'int'          => $tint,
+  'float'        => $tfloat,
+  'floatNAN'     => $tfloatNAN,
+  'floatINF'     => $tfloatINF,
+  'double'       => $tdbl,
+  'string'       => $tstring,
+  'multistring'  => $tmstring,
+  'null'         => $tnull,
+  '&null'        => &$tnull,
+  'NULL'         => NULL,
+  'empty array'  => $tarray,
+  'array'        => array(  
+    'int'          => $tint,
+    'float'        => $tfloat,
+    'string'       => $tstring,
+    'nested array' => array(1,2,3),
+    ),
+  'bool true'    => true,
+  'bool false'   => false, 
+  'object'       => new stdClass,
+  'resource'     => opendir("."),
   );  
   
 
