@@ -290,7 +290,7 @@ function sa_dumpHooks($hookname = NULL,$exclude = false,$actions = false){
     # debugPair($hook['hook'],implode(', ',$hook['args']));     
 
         $return = '<span class="cm-default"><span><b>'.$hook['hook'] .'</b><span class="cm-tag"> &rarr; </span></span>'
-        .'<span class="cm-variable">' . $hook['function'] . '</span>'
+        .'<span class="cm-variable">' . (is_array($hook['function']) ? get_class($hook['function'][0]).'->'.$hook['function'][1] : $hook['function'] ). '</span>'
         .'<span class="cm-bracket">(</span>'
         .'<span class="">' . arr_to_csv_line($hook['args']) .'</span>'
         .'<span class="cm-bracket">)</span>'

@@ -12,6 +12,8 @@
 
 // init timer
 
+GLOBAl $SITEURL;
+
 $stopwatch = new StopWatch();
 
 $SA_DEV_CONFIG = array(
@@ -57,19 +59,27 @@ $sa_url      = 'http://tablatronix.com/getsimple-cms/sa-dev-plugin/';
 // $SA_CM_THEME = "cm-s-monokai";
 
 // if(isset($_GET['theme'])) $SA_CM_THEME  = $_GET['theme'];
-
-# get correct id for plugin
-$thisfile    = basename(__FILE__, ".php");// Plugin File
-$sa_pname    = 'SA Development';          //Plugin name
-$sa_pversion = '0.9';                     //Plugin version
-$sa_pauthor  = 'Shawn Alverson';          //Plugin author
-$sa_purl     =  $sa_url;                  //author website
-$sa_pdesc    =  'SA Development Suite';   //Plugin description
-$sa_ptype    =  '';                       //page type - on which admin tab to display
-$sa_pfunc    =  '';                       //main function (administration)
   
 # register plugin
-register_plugin($thisfile,$sa_pname,$sa_pversion,$sa_pauthor,$sa_url,$sa_pdesc,$sa_ptype,$sa_pfunc);
+sa_register_plugin();
+
+function sa_register_plugin(){
+
+  GLOBAL $sa_url;
+
+  # get correct id for plugin
+  $thisfile    = basename(__FILE__, ".php");// Plugin File
+  $sa_pname    = 'SA Development';          //Plugin name
+  $sa_pversion = '0.9';                     //Plugin version
+  $sa_pauthor  = 'Shawn Alverson';          //Plugin author
+  $sa_purl     =  $sa_url;                  //author website
+  $sa_pdesc    =  'SA Development Suite';   //Plugin description
+  $sa_ptype    =  '';                       //page type - on which admin tab to display
+  $sa_pfunc    =  '';                       //main function (administration)
+
+ if(function_exists('register_plugin')) 
+    register_plugin($thisfile,$sa_pname,$sa_pversion,$sa_pauthor,$sa_url,$sa_pdesc,$sa_ptype,$sa_pfunc);
+}
 
 // INCLUDES
 require_once('sa_development/hooks.php');
@@ -603,12 +613,16 @@ if(!function_exists('dl')){
   function dl(/* variable arguments */){
     debuglogprepare(func_get_args(),__FUNCTION__);
   };
+function _debugPerf($msg){
+	sa_bmark_debug($msg);
 }
 
 if(!function_exists('log')){ 
   function log(/* variable arguments */){
     debuglogprepare(func_get_args(),__FUNCTION__);
   };
+function _debugReturn(/* variable arguments */){
+  return vdump(func_get_args());
 }
 
 if(!function_exists('debug')){ 
