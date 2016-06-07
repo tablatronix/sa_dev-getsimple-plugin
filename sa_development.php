@@ -612,23 +612,27 @@ function _debugReturn(/* variable arguments */){
 if(!function_exists('dl')){ 
   function dl(/* variable arguments */){
     debuglogprepare(func_get_args(),__FUNCTION__);
-  };
-function _debugPerf($msg){
-	sa_bmark_debug($msg);
+  }
 }
 
 if(!function_exists('log')){ 
   function log(/* variable arguments */){
     debuglogprepare(func_get_args(),__FUNCTION__);
-  };
-function _debugReturn(/* variable arguments */){
-  return vdump(func_get_args());
+  }
 }
 
 if(!function_exists('debug')){ 
   function debug(/* variable arguments */){
     debuglogprepare(func_get_args(),__FUNCTION__);
-  };
+  }
+}
+
+function _debugPerf($msg){
+	sa_bmark_debug($msg);
+}
+
+function _debugReturn(/* variable arguments */){
+  return vdump(func_get_args());
 }
 
 function debuglogprepare($args,$funcname = null){
