@@ -204,6 +204,8 @@ function sa_backtrace_template($index,$call){
   $func     = $call['function'];
   $args     = isset($call['args']) ? arr_to_csv_line($call['args']) : '';
 
+  $chars = sa_dev_getconfig('btcharlimit');
+  if($chars && (strlen($args) > $chars)) $args = substr($args,0,$chars).'...';
 
   // #0 __FUNCTION__("argument") called at [__FILE__:__LINE__]
   $str = '<div><span class="cm-default">'
