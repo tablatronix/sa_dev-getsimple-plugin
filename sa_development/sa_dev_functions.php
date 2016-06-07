@@ -69,15 +69,23 @@ function byteSizeConvert($size){ // returns formatted byte string
   return @round($size/pow(1024,($i=floor(log($size,1024)))),2).' '.$unit[$i];
 }
 
-function arr_to_csv_line($arr) { // returns array as comma list of args
-		// todo: fix handlng of object classes
+function arr_to_csv_line($arr,$chars = 100) { // returns array as comma list of args
     $line = array();
-    if(!$arr) return;
-		foreach ($arr as $v) {
-				# _debugLog($v);
-				$line[] = ( is_array($v) or is_object($v) ) ? 'array(' . arr_to_csv_line($v) . ')' : '"' . str_replace('"', '""', $v) . '"';
-		}
-		return implode(",", $line);
+    if(!$arr) return '';
+	foreach ($arr as $v) {
+			// _debugLog($v);
+			// todo: fix handlng of object classes
+			if(is_array($v) or is_object($v) ){
+				// $line[] = 'array(' . count($v) . ')'; //arr_to_csv_line($v,$depth--) . ')';
+				$str = 'array(' . arr_to_csv_line($v,$chars) . ')';
+				// if($str !== "array()") $line[] = substr($str,0,$chars) . '...['.count($v).']';
+				if($str !== "array()") $line[] = $str; // if empty
+			}
+			else {
+				$line[] = '"' . str_replace('"', '""', $v) . '"';
+			}	
+	}
+	return implode(",", $line);
 }
 
 function sa_array_index($ary,$idx){ // handles all the isset error avoidance bullshit when checking an array for a key that might not exist

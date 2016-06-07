@@ -17,15 +17,16 @@ GLOBAl $SITEURL;
 $stopwatch = new StopWatch();
 
 $SA_DEV_CONFIG = array(
-  'showsuppressederrors'       => false,
-  'showerrorbacktracealways'   => true,  // showbacktrace for all errors ( notices|supressed ) perhaps use a special error reporting mask here
-  'showerrorcontext'           => false, // show error context (dump local vars)
-  'disablexdebug'              => false, // disable xdebug
-  'overridexdebugvardump'      => true,  // overridexdebug var_dump ( only for var_dumps)
-  'showrequestvars'            => true,  // @todo NI show get and post vars always
-  'showerrorlevels'            => true,  // @todo NI show error reporting levels and changes
-  'showerrors'                 => true,   // @todo NI use custom error handler
-  'theme'                      => 'monokai' // 'monokai' or 'default'
+  'showsuppressederrors'       => false,     // show @ supressed errors
+  'showerrorbacktracealways'   => true,      // showbacktrace for all errors ( notices|supressed ) perhaps use a special error reporting mask here
+  'showerrorcontext'           => false,     // show error context (dump local vars)
+  'disablexdebug'              => false,     // disable xdebug
+  'overridexdebugvardump'      => true,      // overridexdebug var_dump ( only for var_dumps)
+  'showrequestvars'            => true,      // @todo NI show get and post vars always
+  'showerrorlevels'            => true,      // @todo NI show error reporting levels and changes
+  'showerrors'                 => true,      // @todo NI use custom error handler
+  'theme'                      => 'monokai', // 'monokai' or 'default'
+  'btcharlimit'                => 110        // char limit for backtrace arguments
 );
 
 function sa_dev_getconfig($id){
@@ -70,7 +71,7 @@ function sa_register_plugin(){
   # get correct id for plugin
   $thisfile    = basename(__FILE__, ".php");// Plugin File
   $sa_pname    = 'SA Development';          //Plugin name
-  $sa_pversion = '0.9';                     //Plugin version
+  $sa_pversion = '1.0';                     //Plugin version
   $sa_pauthor  = 'Shawn Alverson';          //Plugin author
   $sa_purl     =  $sa_url;                  //author website
   $sa_pdesc    =  'SA Development Suite';   //Plugin description
@@ -609,6 +610,10 @@ function _debugReturn(/* variable arguments */){
   return vdump(func_get_args());
 }
 
+function _debugPerf($msg){
+	sa_bmark_debug($msg);
+}
+
 if(!function_exists('dl')){ 
   function dl(/* variable arguments */){
     debuglogprepare(func_get_args(),__FUNCTION__);
@@ -625,14 +630,6 @@ if(!function_exists('debug')){
   function debug(/* variable arguments */){
     debuglogprepare(func_get_args(),__FUNCTION__);
   }
-}
-
-function _debugPerf($msg){
-	sa_bmark_debug($msg);
-}
-
-function _debugReturn(/* variable arguments */){
-  return vdump(func_get_args());
 }
 
 function debuglogprepare($args,$funcname = null){
