@@ -367,7 +367,8 @@ function sa_debugtest(){
 
   // GLOBAl $debugLogFunc;
   // $debugLogFunc = 'dl';
-  
+
+
   dl("dl funcname","test");  // dl() alias functionname
   _debugLog("_debugLog funcname","test"); // _debugLog standard funcname 
 
@@ -443,7 +444,6 @@ function sa_debugtest(){
   _debugLog($tstring);
   _debugLog($tint);
   
-
   _debugLog($tint,$tfloat,$tdbl,$tstring,$tnull,$tarray);
   _debugLog($tstring);
   _debugLog('A string of text');
@@ -463,6 +463,8 @@ function sa_debugtest(){
   // for($i=0;$i<50;$i++){ vdump($_SERVER);}
   // sa_bmark_debug('vdump END');
 
+// bookmark test, jumpto
+  __debuglog("bookmark test");
 
 _debugLog(nl2br("
 <span class=cm-default>default</span>

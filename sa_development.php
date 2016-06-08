@@ -368,11 +368,21 @@ function sa_debugConsole(){  // Display the log
 
     ";
     echo "
+    // keep collapse|expand on top
     $('#sa_gsdebug').scroll(function(e){
       console.log('scrolling');
       var offset = $(this).scrollTop();
       $('#collapser').css('top',offset);
     });
+
+    // jump to element
+	function jump(elem){
+	    var top = elem.offsetTop; //Getting Y of target element
+	    $('#sa_gsdebug').get(0).scrollTop = top;
+	}
+	
+	// jump to bookmark
+	jump($('.sa_bookmark').get(0));
 
     ";
     echo "\n});";
@@ -391,9 +401,9 @@ function sa_debugConsole(){  // Display the log
     }
     
     echo "\n";
-    echo'<div id="sa_gsdebug" class="cm-s-'.sa_dev_getconfig('theme').'">';
+    echo'<div id="sa_gsdebug" class="cm-s-'.sa_dev_getconfig('theme').'">'; // main container
     // echo'<div id="float"><div class="marker"></div></div>';
-    echo '<span id="collapser" class="cm-keyword"><a class="collapseall">collapse</a><span> | </span><a class="expandall">expand</a></span>';
+    echo '<span id="collapser" class="cm-keyword CodeMirror-gutters"><a class="collapseall">collapse</a><span> | </span><a class="expandall">expand</a></span>';
     echo '<pre>';
 
     if(!$sa_console_sent){
@@ -606,6 +616,10 @@ function _debugLog(/* variable arguments */){
   debuglogprepare(func_get_args());
 }
 
+function __debugLog(/* variable arguments */){
+  debuglogprepare(func_get_args(),__FUNCTION__);
+}
+
 function _debugReturn(/* variable arguments */){
   return vdump(func_get_args());
 }
@@ -673,7 +687,7 @@ function vdump($args,$func = null){
     
     // ! backtrace arguments are passed by reference !
     // todo: make this totally safe with no chance of modifying arguments. make copies of everything
-    
+    // @todo add capability to skip backtrace info, for efficiency when not needed
     $backtrace = debug_backtrace();
     local_debug("<h2>bt </h2><pre>".print_r($backtrace,true)."</pre>");
     
@@ -734,11 +748,16 @@ function vdump($args,$func = null){
     
     # debugLog(print_r($argstr,true));
     # debugLog(print_r($argnames,true));
+
     
     $collapsestr= '<span class="sa_expand sa_icon_open"></span><span class="sa_collapse">';
     $bmark_str = bmark_line();
     $str = "";
-    
+
+    if($func == "__debugLog"){
+	    $str.="<span class='titlebar cm-error sa_bookmark'>&nbsp;</span><span class='sa_expand sa_icon_tag'></span>";
+    }
+
     if($numargs > 1 and gettype($arg1)=='string' and !empty($arg1) and ( gettype($args[1])!='string' or strpos($argnames[1],'$') === 0)){
       // if a string and more arguments, we treat first argumentstring as title, and shift it off the arg array
       $str.=('<span class="titlebar special" title="(' . sa_get_path_rel($file) . ' ' . $line . ')">'.htmlspecialchars($arg1).$bmark_str.'</span>');
@@ -754,7 +773,7 @@ function vdump($args,$func = null){
     }
     elseif($numargs == 1 and gettype($arg1)=='string' and strpos($argnames[0],'$') === false){
       // if string debug, basic echo, todo: this also catches functions oops
-      $str=('<span class="string" title="(' . sa_get_path_rel($file) . ' ' . $line . ')">'.htmlspecialchars($arg1, ENT_QUOTES, 'UTF-8').'</span>');
+      $str.=('<span class="string" title="(' . sa_get_path_rel($file) . ' ' . $line . ')">'.htmlspecialchars($arg1, ENT_QUOTES, 'UTF-8').'</span>');
       $str.= '<span>';
       return $str;
     }

@@ -171,23 +171,26 @@
   #sa_gsdebug #collapser{
     margin:2px 5px 0 0 ;
     float:right;
-    /*opacity:.2;*/
+    opacity:.9;
     position:absolute;
     top:0;
     right:0;
-    background-color: rgba(117, 117, 117, 0.23);
     border-radius: 3px;
-    padding: 1px 8px;
+    padding: 2px 8px;
+    /*background-color: rgba(117, 117, 117, 0.23);*/
+	/*mix-blend-mode: exclusion;    */
   }
-  
+
 #sa_gsdebug #collapser span{
     opacity:.6;
   }
 
   #sa_gsdebug #collapser a{
-    opacity:.5;
+    opacity:.8;
     cursor:pointer;
     color:inherit;
+    font-size:1.2em;
+    font-weight:bold;
   }
 
   #sa_gsdebug #collapser a:hover{
@@ -242,7 +245,7 @@
 		color:#555;
 		vertical-align:middle;
 		line-height:16px !important;		
-	}	
+	}
 	
 	#sa_gsdebug .titlebar .bmark{	
     -moz-border-radius: 3px;
@@ -265,6 +268,11 @@
 		background-color:#FEFCCB !important; 
 		/* border:1px solid #E5DB55 !important;		 */
 	}		
+
+	#sa_gsdebug .sa_icon_tag{
+		/*background-color: rgba(0,0,0,.3);*/
+		mix-blend-mode: multiply;
+	}
 	
   #sa_gsdebug .divider{
     /*border-color: #E8E8E8;*/
@@ -377,9 +385,9 @@
   color:#000 !important;
   /* font-style:italic !important; */
   font-weight:bold !important;
-  margin:-16px 0 0 -8px; 
-  width:16px !important;
-  height:16px !important;
+  margin:-17px 0 0 -8px; 
+  width:17px !important;
+  height:17px !important;
   /* background-color:#E8E8E8 !important;  */
   border:none;
   vertical-align:middle;
@@ -429,7 +437,7 @@
   background-image: url('../img/iconssprite.png') !important;
   background-position: -78px -145px !important;
   background-repeat:no-repeat;
-  padding: 0 16px 0 0 ;
+  /*padding: 0 16px 0 0 ;*/
 }
 
 .sa_icon_mempeak{
@@ -454,6 +462,10 @@
 
 .sa_icon_diskfree{
   background-position: -353px -114px !important;
+}
+
+.sa_icon_tag{
+   background-position: -240px -96px !important;	
 }
 
 /* codemirror styles */
@@ -487,7 +499,7 @@
 #sa_gsdebug.cm-s-monokai, #sa_gsdebug.cm-s-monokai pre {
   color: #f8f8f2;
   background-color: #272822;
-}  
+}
 
 #sa_gsdebug.cm-s-monokai.CodeMirror {background: #272822; color: #f8f8f2;}
 #sa_gsdebug.cm-s-monokai div.CodeMirror-selected {background: #49483E !important;}
@@ -762,14 +774,18 @@ div.section_alt .widesec {
 }
 
 
-/* time markers on bmarks #sa_gsdebug .bmeter */
+/* TESTING
+ * time markers on bmarks #sa_gsdebug .bmeter class to enable
+ * creates a line tick on bmark [ 20ms | ], colored by percentage, line width is .5% which might be to thin dependnig on width
+*/
 #sa_gsdebug.bmeter .titlebar .bmark {
-    background-color: rgba(100,100,100,.2);
+    background-color: rgba(100,100,100,.2) !important;
+    color: rgba(255,255,255,.5);
 
     background-image: linear-gradient(
       90deg,
       transparent 0%, 
-      transparent 5%, 
+      transparent 5%,
       
       transparent 5%, 
       #ae81ff 5%,
@@ -777,7 +793,7 @@ div.section_alt .widesec {
 
       transparent 56%,
       #f92672 56%,
-      transparent 56.5%,
+      transparent 57.5%,
 
       transparent 80%,
       #e6db74 80%,
