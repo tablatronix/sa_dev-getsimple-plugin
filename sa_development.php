@@ -22,13 +22,22 @@ $SA_DEV_CONFIG = array(
   'showerrorcontext'           => false,     // show error context (dump local vars)
   'disablexdebug'              => false,     // disable xdebug
   'overridexdebugvardump'      => true,      // overridexdebug var_dump ( only for var_dumps)
-  'showrequestvars'            => true,      // @todo NI show get and post vars always
-  'showerrorlevels'            => true,      // @todo NI show error reporting levels and changes
-  'showerrors'                 => true,      // @todo NI use custom error handler
+  'showrequestvars'            => true,      // show get and post vars always
+  'showerrorlevels'            => true,      // show error reporting level changes
+  'showerrors'                 => true,      // use custom error handler
   'theme'                      => 'monokai', // 'monokai' or 'default'
-  'btcharlimit'                => 110        // char limit for backtrace arguments
+  'btcharlimit'                => 110        // char limit for backtrace function arguments display
+  'enablefrontend'             => true       // alias for SA_DEV_ON, will replace
 );
 
+/**
+ * get the config, merge 2 globals for overrides
+ * user global array overrides default
+ * @uses  $SA_DEV_CONFIG
+ * @uses  $SA_DEV_USER_CONFIG
+ * @param  String $id param id
+ * @return mixed  config setting
+ */
 function sa_dev_getconfig($id){
   GLOBAL $SA_DEV_CONFIG,$SA_DEV_USER_CONFIG;
   if(isset($SA_DEV_USER_CONFIG)) $SA_DEV_CONFIG = array_merge($SA_DEV_CONFIG,$SA_DEV_USER_CONFIG);
@@ -43,9 +52,11 @@ function sa_dev_setconfig($id,$value){
 
 // global to force console on front end even when not logged in
 $SA_DEV_ON = isset($SA_DEV_ON) ? $SA_DEV_ON : false;
+if($SA_DEV_ON) sa_dev_setconfig('enablefrontend',true);
 
 define('SA_DEBUG',false); // sa dev plugin debug for debugging itself
 
+// fill for getting relative urls
 if(!function_exists('getRelPath')){
   function getRelPath($path,$root = GSROOTPATH ){
     $relpath = str_replace($root,'',$path);
@@ -56,10 +67,6 @@ if(!function_exists('getRelPath')){
 $PLUGIN_ID   = "sa_development";
 $PLUGINPATH  = $SITEURL. getRelPath(GSPLUGINPATH) . '/sa_development/';
 $sa_url      = 'http://tablatronix.com/getsimple-cms/sa-dev-plugin/';
-// $SA_CM_THEME = "cm-s-default";
-// $SA_CM_THEME = "cm-s-monokai";
-
-// if(isset($_GET['theme'])) $SA_CM_THEME  = $_GET['theme'];
   
 # register plugin
 sa_register_plugin();
@@ -95,7 +102,7 @@ if(SA_DEBUG==true){
 }
 
 // enable only when logged in
-if((sa_user_is_admin() || $SA_DEV_ON) && (get_filename_id() != 'install' && get_filename_id() != 'setup' && get_filename_id() != 'update')){
+if((sa_user_is_admin() || sa_dev_getconfig('enablefrontend') == true) && (get_filename_id() != 'install' && get_filename_id() != 'setup' && get_filename_id() != 'update')){
   add_action('index-posttemplate', 'sa_debugConsole');
   if(SA_DEBUG==true){
     add_action('footer', 'sa_debugtest');         // debug logging @todo only backend debugtesting
@@ -296,6 +303,7 @@ function sa_dev_executeheader(){ // assigns assets to queue or header
 }
 
 function sa_logRequests(){
+  if(!sa_dev_getconfig('showrequestvars')) return;
   if(isset($_POST) and count($_POST) > 0){
     _debuglog('PHP $_POST variables',$_POST);
   }
@@ -307,7 +315,7 @@ function sa_logRequests(){
 }
 
 function sa_debugConsole(){  // Display the log
-  global $GS_debug,$stopwatch,$sa_console_sent,$sa_phperr_init,$SA_CM_THEME,$overridexdebug;
+  global $GS_debug,$stopwatch,$sa_console_sent,$sa_phperr_init,$overridexdebug;
   
   if(!$sa_console_sent){
     sa_logRequests();
@@ -648,7 +656,7 @@ if(!function_exists('debug')){
 
 function debuglogprepare($args,$funcname = null){
   GLOBAL $GS_debug;
-  if(sa_getErrorChanged()){
+  if(sa_getErrorChanged() && sa_dev_getconfig('showerrorlevels')){
     debugTitle('PHP Error Level changed: <small>(' . error_reporting() . ') ' .error_level_tostring(error_reporting(),'|') . '</small>','notice');
   }
 
@@ -1048,7 +1056,9 @@ function sa_emptyDoc($error){
     
 }
 
+// if logged in and option is enabled enable error handlers
 if(sa_user_is_admin()){
+  if(!sa_dev_getconfig('showerrors')) return;
   register_shutdown_function('sa_dev_handleShutdown');
   set_error_handler("sa_dev_ErrorHandler");
 }
@@ -1121,26 +1131,7 @@ function sa_getErrorChanged(){
 // add_action('settings-website-extras','sa_settings_extras');
 
 function sa_settings_extras(){
-  // echo 'sa_settings_extras';
   include('sa_development/settings.php');
 }
-
-/**
-  @fixed: @float(NAN 
-  @fixed: @float(INF
-  @fixed: @todo: backtrace does not show current function shows last include and stops
-  
-  @fixed: xdebug takes over var_dump, fucks it all up, disabling durign var_dump, @todo: make a function wrapper fo use anytime.
-  @todo: automatic timestamp detection, detect unixtime strings and show time formatted
-  @todo: auto colors highlighting and html syntax highlighting, rgb, and #hex, edtect html and run html highlight on it.
-  @todo: append console to end of document attempt to take out of flow for fatal php errors, as they mess up layout, also load asset detection so not loading twice on fatal past header
-  @todo: backtrace line show
-  @todo: backtrace filename highlight better than path
-  @todo: highlight path paths, filename as above
-  @todo: php script timeout handling report the last function running
-  @todo: javascript handlers, ajax handlers, error handlers, console output of php errors
-  @todo: write proper parser to replace the preg replacers 
-  @todo: showing supressed errors, does a post footer dump, missing normal debug console as if fatal
-**/
 
 ?>
